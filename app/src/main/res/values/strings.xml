@@ -1,0 +1,104 @@
+<resources>
+    <string name="app_name">Todo Notion Compose</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="list_fragment_label">List Fragment</string>
+    <string name="add_fragment_label">Add Fragment</string>
+
+    <string name="todo_detail_title">Todo Details</string>
+    <string name="todo">Todo</string>
+    <string name="back_button">Back button</string>
+    <string name="keyword">Keyword</string>
+
+    <string name="loading">Loading</string>
+    <string name="loading_failed">Loading failed</string>
+    <string name="retry">Retry</string>
+    <string name="todo_img">Todo image</string>
+    <string name="notes">Notes</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="search_btn">Search</string>
+    <string name="add_btn">Add</string>
+    <string name="edit_btn">Edit</string>
+    <string name="detail_img">Detail image</string>
+    <string name="status">Status</string>
+    <string name="recent">Recent</string>
+    <string name="clear_title">Clear all recent searches?</string>
+    <string name="clear_cont">This can\'t undone and you will remove all your recent searches.</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
+    <string name="home">Home</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="password_confirm">confirm password</string>
+
+    <string name="signup">Signup</string>
+    <string name="login">Login</string>
+    <string name="logout">Logout</string>
+    <string name="login_title">Please sign in to continue.</string>
+    <string name="signup_title">Create Account</string>
+    <string name="signup_login_text">Already have a account?</string>
+    <string name="login_signup_text">Don\'t have an account?</string>
+    <string name="signIn_text">Sign in</string>
+    <string name="signUp_text">Sign up</string>
+    <string name="username">User name</string>
+    <string name="usernameOrEmail">usernameOrEmail</string>
+    <string name="logout_title">Logout</string>
+    <string name="logout_cont">Are you sure you want to log out?</string>
+    <string name="ok">OK</string>
+    <string name="tab_recent">Recent</string>
+    <string name="tab_favorites">Favorites</string>
+    <string name="tab_posts">All post</string>
+    <string name="tab_user_posts">Your post</string>
+
+    <string name="list_posts_title">title</string>
+
+    <string name="list_posts_content">content</string>
+    <string name="list_posts_createDate">create date</string>
+
+    <string name="refresh">refresh</string>
+    <string name="open">open</string>
+    <string name="close">close</string>
+    <string name="posts">posts</string>
+
+    <string name="home_label">Home page</string>
+
+    <string name="post_details_label">Post details page</string>
+
+
+    <string name="nav_title">Todo notion</string>
+    <string name="nav_title_default">Hello, <big><font color="#FF6200EE">guest</font></big>! Welcome to use.</string>
+
+    <string name="nav_title1">Hello, <big><font color="#FF6200EE">%1$s</font></big>! Welcome to use.</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="item_detail_fragment_title">Item Details</string>
+    <string name="add_fragment_title">Add Item</string>
+    <string name="edit_fragment_title">Edit Item</string>
+
+    <string name="edit_title_error">title cannot be empty</string>
+    <string name="edit_content_error">content cannot be empty</string>
+    <string name="name">name</string>
+
+    <string name="signup_success_msg1">Congratulations, your account has been successfully created.</string>
+    <string name="signup_success_msg2">Please login to continue.</string>
+    <string name="add_post_title">Create new post</string>
+    <string name="signup_success_dialogs_btn">Continue</string>
+
+    <string name="login_usernameOrEmail">UserName or email cannot be empty</string>
+    <string name="login_password">Password cannot be empty</string>
+
+    <string name="signup_name">Name cannot be empty</string>
+
+    <string name="signup_username">Username cannot be empty</string>
+
+    <string name="signup_email">Email cannot be empty</string>
+
+    <string name="signup_username_error">Username is already exists!.</string>
+
+    <string name="signup_email_error">Email is already exists!.</string>
+
+    <string name="signup_server_error">Server error. Please reload and try again.</string>
+
+    <string name="login_error">Incorrect username or email or password</string>
+</resources>
