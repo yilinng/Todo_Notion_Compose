@@ -1,5 +1,6 @@
 package com.example.todonotioncompose.ui.auth
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,17 +16,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 
-class TokenViewModel(private val tokensRepository: TokensRepository): ViewModel()  {
+class TokenViewModel(private val tokensRepository: TokensRepository) : ViewModel() {
     /**
      * Holds current item ui state
      */
     var tokenUiState by mutableStateOf(TokenUiState())
         private set
-
 
 
     /**
@@ -42,7 +43,8 @@ class TokenViewModel(private val tokensRepository: TokensRepository): ViewModel(
      * [TokenUiState]
      */
     val tokensUiState: StateFlow<TokensUiState> =
-        tokensRepository.getAllTokensStream().map { TokensUiState(it) }
+        tokensRepository.getAllTokensStream()
+            .map { TokensUiState(it) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
@@ -60,19 +62,18 @@ class TokenViewModel(private val tokensRepository: TokensRepository): ViewModel(
     }
 
     /**
-     * Deletes the item from the [TokensRepository]'s data source.
-
-    suspend fun deleteKeyword() {
-    keywordsRepository.deleteKeyword(keywordUiState.value.keywordDetails.toKeyword())
-    }
+     * Deletes the token from the [TokensRepository]'s data source.
      */
+    suspend fun deleteToken() {
+        Log.d("logoutAction", tokensUiState.value.itemList[0].toString())
+        tokensRepository.deleteToken(tokensUiState.value.itemList[0])
+    }
+
     private fun validateInput(uiState: TokenDetails = tokenUiState.tokenDetails): Boolean {
         return with(uiState) {
             accessToken.isNotBlank() && refreshToken.isNotBlank() && userId.isNotBlank()
         }
     }
-
-
 
 
     /**

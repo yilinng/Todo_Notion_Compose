@@ -28,7 +28,7 @@ class SearchViewModel(private val keywordsRepository: KeywordsRepository) : View
 
 
     /**
-     * Updates the [itemUiState] with the value provided in the argument. This method also triggers
+     * Updates the [KeywordUiState] with the value provided in the argument. This method also triggers
      * a validation for input values.
      */
     fun updateUiState(keywordDetails: KeywordDetails) {

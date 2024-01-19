@@ -1,11 +1,11 @@
 package com.example.todonotioncompose.ui.auth
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import com.example.todonotioncompose.R
 import com.example.todonotioncompose.ui.navigation.NavigationDestination
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,17 +15,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.AlertDialog
+
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -33,38 +30,30 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todonotioncompose.TodoNotionAppBar
-import com.example.todonotioncompose.data.Keyword.Keyword
-import com.example.todonotioncompose.model.Todo
+import com.example.todonotioncompose.data.Token.Token
+
 import com.example.todonotioncompose.ui.AppViewModelProvider
-import com.example.todonotioncompose.ui.theme.Green400
-import com.example.todonotioncompose.ui.theme.Pink80
-import com.example.todonotioncompose.ui.theme.Sky400
-import com.example.todonotioncompose.ui.theme.TodoNotionComposeTheme
-import com.example.todonotioncompose.ui.todo.ErrorScreen
-import com.example.todonotioncompose.ui.todo.LoadingScreen
-import com.example.todonotioncompose.ui.todo.PhotosGridScreen
-import com.example.todonotioncompose.ui.todo.TodoPhotoCard
-import com.example.todonotioncompose.ui.todo.TodoUiState
-import com.example.todonotioncompose.ui.todo.TodoViewModel
+import com.example.todonotioncompose.ui.theme.*
+
 import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
+import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.ui.window.Dialog
+
 
 object SignupScreenDestination : NavigationDestination {
     override val route = "signup"
@@ -81,8 +70,7 @@ fun SignupScreen(
     canNavigateBack: Boolean = true,
     tokenViewModel: TokenViewModel = viewModel(factory = AppViewModelProvider.Factory),
     userViewModel: UserViewModel,
-    navigateToHome: () -> Unit,
-    navigateToLogin: () -> Unit,
+    signupUiState: SignupUiState,
     modifier: Modifier = Modifier
 ) {
     //val uiState by viewModel.todoUiState
@@ -100,49 +88,45 @@ fun SignupScreen(
         Column(
             modifier = Modifier
                 .fillMaxHeight()
-                .background(Color.LightGray)
+                .background(Gray50)
         ) {
-            var errorText by mutableStateOf("")
-            var loading by remember { mutableStateOf(false) }
+           //var errorText by mutableStateOf("")
+           // var loading by remember { mutableStateOf(false) }
+            val context = LocalContext.current
 
             SignupEntryBody(
                 signupInputUiState = userViewModel.signupInputUiState,
                 //    onLoginValueChange = userViewModel::up,
                 onSaveClick = {
-                    coroutineScope.launch {
-                        userViewModel.checkSignup(userViewModel.signupInputUiState.signupDetails)
-
-                        when(userViewModel.signupUiState){
-                            is SignupUiState.Loading -> {
-                                loading = true
-                            }
-                            is SignupUiState.Success -> {
-                                loading = false
-                                navigateToHome()
-                            }
-                            is SignupUiState.Error -> {
-                                loading = false
-                                errorText = LoginUiState.Error.toString()
-                            }
-                        }
-                    }
+                    userViewModel.checkSignup(userViewModel.signupInputUiState.signupDetails)
                 },
                 onLoginTextClick = {
                     navigateBack()
                 },
-                errorText = errorText,
+                userViewModel = userViewModel,
                 modifier = Modifier
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
                     .fillMaxWidth()
             )
 
-            if(loading) {
-                CircularProgressIndicator(
+
+            when(signupUiState){
+                is SignupUiState.Loading -> CircularProgressIndicator(
                     modifier = Modifier.width(64.dp),
                     color = MaterialTheme.colorScheme.secondary,
                     trackColor = MaterialTheme.colorScheme.surfaceVariant,
                 )
+                is SignupUiState.Success -> SignupProcess(
+                    responseBody = signupUiState.responseBody,
+                    navigateBack = navigateBack,
+                )
+                is SignupUiState.Error ->  {
+                    Text(text = signupUiState.errorText, color = Color.Red, fontSize = 20.sp)
+
+                    showMessage(context = context, errorText = R.string.login_error)
+
+                }
+
             }
 
         }
@@ -150,12 +134,54 @@ fun SignupScreen(
 }
 
 @Composable
+fun SignupProcess(
+    responseBody: ResponseBody,
+    navigateBack: () -> Unit,
+) {
+
+    Log.d("signupSuccess", responseBody.toString())
+
+    AlertDialog(
+        icon = {
+            Icon(Icons.Default.CheckCircleOutline, contentDescription = "Success Icon")
+        },
+        title = {
+            Text(text = stringResource(R.string.signup_success_msg1))
+        },
+        text = {
+            Text(text =  stringResource(R.string.signup_success_msg2))
+        },
+        onDismissRequest = {
+           // onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    navigateBack()
+                }
+            ) {
+                Text(stringResource(R.string.signup_success_dialogs_btn))
+            }
+        },
+
+    )
+  //  tokenViewModel.updateUiState(token.toToken())
+    /*
+    LaunchedEffect(tokenViewModel) {
+       // tokenViewModel.saveToken()
+        userViewModel.initSignup()
+        navigateToHome()
+    }
+    */
+}
+
+@Composable
 fun SignupEntryBody(
     signupInputUiState: SignupInputUiState,
     // onLoginValueChange: (LoginDetails) -> Unit,
     onLoginTextClick:() -> Unit,
-    onSaveClick: (LoginDetails) -> Unit,
-    errorText: String,
+    onSaveClick: (SignupDetails) -> Unit,
+    userViewModel: UserViewModel,
     modifier: Modifier
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -163,33 +189,34 @@ fun SignupEntryBody(
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
-       SignupInputForm(signupDetails = signupInputUiState.signupDetails)
+       SignupInputForm(
+           signupDetails = signupInputUiState.signupDetails,
+           onSignupValueChange = userViewModel::updateSignupUiState
+       )
 
-        Spacer(modifier = modifier.padding(1.dp))
-
-        Text(text = errorText, color = Color.Red, fontSize = 20.sp)
+       // Spacer(modifier = modifier.padding(1.dp))
 
         Button(
-            onClick = { onSaveClick },
+            onClick = { onSaveClick(signupInputUiState.signupDetails) },
             enabled = signupInputUiState.isEntryValid,
             shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.signup))
         }
+  //      Spacer(modifier = modifier.padding(1.dp))
 
-        Spacer(modifier = modifier.padding(1.dp))
-
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
 
             Text(text = stringResource(R.string.signup_login_text), color = Sky400)
-
-            Spacer(modifier = Modifier.padding(end=2.dp) )
+//            Spacer(modifier = Modifier.padding(end=2.dp) )
 
             TextButton(
-                onClick = { onLoginTextClick }
+                onClick = { onLoginTextClick() }
             ) {
-                Text(text = stringResource(R.string.signup), color = Pink80)
+                Text(text = stringResource(R.string.login), color = Pink80)
             }
         }
     }
@@ -199,7 +226,7 @@ fun SignupEntryBody(
 fun SignupInputForm(
     signupDetails: SignupDetails,
     modifier: Modifier = Modifier,
-    onValueChange: (SignupDetails) -> Unit = {},
+    onSignupValueChange: (SignupDetails) -> Unit = {},
     enabled: Boolean = true
 ) {
     Column(
@@ -208,7 +235,7 @@ fun SignupInputForm(
     ) {
         OutlinedTextField(
             value = signupDetails.name,
-            onValueChange = { onValueChange(signupDetails.copy(name = it)) },
+            onValueChange = { onSignupValueChange(signupDetails.copy(name = it)) },
             label = { Text(stringResource(R.string.name)) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -221,7 +248,7 @@ fun SignupInputForm(
         )
         OutlinedTextField(
             value = signupDetails.username,
-            onValueChange = { onValueChange(signupDetails.copy(username = it)) },
+            onValueChange = { onSignupValueChange(signupDetails.copy(username = it)) },
             label = { Text(stringResource(R.string.username)) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -234,7 +261,7 @@ fun SignupInputForm(
         )
         OutlinedTextField(
             value = signupDetails.email,
-            onValueChange = { onValueChange(signupDetails.copy(email = it)) },
+            onValueChange = { onSignupValueChange(signupDetails.copy(email = it)) },
             label = { Text(stringResource(R.string.email)) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -248,7 +275,7 @@ fun SignupInputForm(
 
         OutlinedTextField(
             value = signupDetails.password,
-            onValueChange = { onValueChange(signupDetails.copy(password = it)) },
+            onValueChange = { onSignupValueChange(signupDetails.copy(password = it)) },
             label = { Text(stringResource(R.string.password)) },
             colors = OutlinedTextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,

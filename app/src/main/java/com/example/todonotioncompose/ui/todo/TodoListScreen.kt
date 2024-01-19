@@ -1,5 +1,6 @@
 package com.example.todonotioncompose.ui.todo
 
+import android.util.Log
 import android.widget.Space
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -78,6 +79,7 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
         painter = painterResource(R.drawable.loading_img),
         contentDescription = stringResource(R.string.loading)
     )
+
 }
 
 

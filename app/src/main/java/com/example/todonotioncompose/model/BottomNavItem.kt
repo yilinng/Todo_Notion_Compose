@@ -9,11 +9,14 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.vector.ImageVector
 
 
+
 sealed class BottomNavItem(val route: String, val icon: ImageVector, val label: String) {
     object Home : BottomNavItem("home", Icons.Default.Home, "Home")
     object Search : BottomNavItem("search", Icons.Default.Search, "Search")
     object PostList : BottomNavItem("postList", Icons.Default.Folder, "PostList")
     object Login : BottomNavItem("login",Icons.Default.AccountCircle, "Login")
+    object Logout : BottomNavItem("logout", Icons.Default.AccountCircle, "Logout")
+
 
 }
 

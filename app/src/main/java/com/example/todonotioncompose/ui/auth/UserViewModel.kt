@@ -1,22 +1,23 @@
 package com.example.todonotioncompose.ui.auth
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.todonotioncompose.TodoApplication
-import com.example.todonotioncompose.data.TodosRepository
 import com.example.todonotioncompose.data.Token.Token
 import com.example.todonotioncompose.data.Token.TokensRepository
 import com.example.todonotioncompose.data.UsersRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import com.example.todonotioncompose.model.*
-import com.example.todonotioncompose.ui.todo.TodoViewModel
+
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,28 +35,27 @@ sealed interface PostUiState {
 
 sealed interface LoginUiState {
     data class Success(val token: Token) : LoginUiState
-    object Error : LoginUiState
+    data class Error(val errorText: String) : LoginUiState
     object Loading : LoginUiState
 }
 
 sealed interface SignupUiState {
     data class Success(val responseBody: ResponseBody) : SignupUiState
-    object Error : SignupUiState
+    data class Error(val errorText: String) : SignupUiState
     object Loading : SignupUiState
 }
 
-class UserViewModel(private val usersRepository: UsersRepository) : ViewModel()  {
+class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() {
 
     /** The mutable State that stores the status of the most recent request */
     var postUiState: PostUiState by mutableStateOf(PostUiState.Loading)
         private set
 
-
     /** The mutable State that stores the status of the most recent request */
     var loginUiState: LoginUiState by mutableStateOf(LoginUiState.Loading)
         private set
 
-    var loginInputUiState by  mutableStateOf(LoginInputUiState())
+    var loginInputUiState by mutableStateOf(LoginInputUiState())
         private set
 
     /** The mutable State that stores the status of the most recent request */
@@ -63,10 +63,12 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
         private set
 
 
-    var signupInputUiState by  mutableStateOf(SignupInputUiState())
+    var signupInputUiState by mutableStateOf(SignupInputUiState())
         private set
 
-    //todo ui State
+    //https://stackoverflow.com/questions/68671108/jetpack-compose-mutablelivedata-not-updating-ui-components
+    //https://stackoverflow.com/questions/72760708/kotlin-stateflow-not-emitting-updates-to-its-collectors
+    //post ui State
     private val _post = MutableStateFlow(Post())
     val post: StateFlow<Post> = _post.asStateFlow()
 
@@ -76,30 +78,53 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
     }
 
 
+    /**
+     * Updates the [LoginUiState] with the value provided in the argument. This method also triggers
+     * a validation for input values.
+     */
+    fun updateLoginUiState(loginDetails: LoginDetails) {
+        loginInputUiState =
+            LoginInputUiState(loginDetails = loginDetails, isEntryValid = validateLoginInput(loginDetails))
+    }
+
+
+    /**
+     * Updates the [LoginUiState] with the value provided in the argument. This method also triggers
+     * a validation for input values.
+     */
+    fun updateSignupUiState(signupDetails: SignupDetails) {
+        signupInputUiState =
+            SignupInputUiState(signupDetails = signupDetails, isEntryValid = validateSignupInput(signupDetails))
+    }
+
+
     //https://stackoverflow.com/questions/33815515/how-do-i-get-response-body-when-there-is-an-error-when-using-retrofit-2-0-observ
     private fun loginAction(login: Login) {
+        Log.d("login", login.toString())
         viewModelScope.launch {
             loginUiState = LoginUiState.Loading
             loginUiState = try {
                 LoginUiState.Success(usersRepository.loginUser(login))
-            } catch (e: IOException) {
-                LoginUiState.Error
             } catch (e: HttpException) {
-                LoginUiState.Error
+                LoginUiState.Error(e.response()?.errorBody()!!.string())
             }
+
+            Log.d("loginStateAction", loginUiState.toString())
+
         }
     }
 
-    fun signupAction(signup: Signup) {
+    private fun signupAction(signup: Signup) {
         viewModelScope.launch {
             signupUiState = SignupUiState.Loading
             signupUiState = try {
                 SignupUiState.Success(usersRepository.signupUser(signup))
-            } catch (e: IOException) {
-                SignupUiState.Error
-            } catch (e: HttpException) {
-                SignupUiState.Error
+            }catch (e: HttpException) {
+                SignupUiState.Error(e.response()?.errorBody()!!.string())
             }
+
+            Log.d("signupStateAction", signupUiState.toString())
+
         }
     }
 
@@ -125,17 +150,20 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
         }
     }
     */
-   fun getPostsAction() {
+    fun getPostsAction() {
         viewModelScope.launch {
             postUiState = PostUiState.Loading
             postUiState = try {
-                PostUiState.Success(usersRepository.getTodos())
+                PostUiState.Success(usersRepository.getPosts())
             } catch (e: IOException) {
                 PostUiState.Error
             } catch (e: HttpException) {
                 PostUiState.Error
+            }finally {
+                Log.d("getPostsAction", postUiState.toString())
             }
         }
+
     }
 
     /**
@@ -151,23 +179,37 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
         }
     }
 
-    fun checkLogin(loginDetails: LoginDetails){
-        if(validateLoginInput()){
+    fun checkLogin(loginDetails: LoginDetails) {
+        Log.d("checkLogin", loginDetails.toString())
+        if (validateLoginInput()) {
             loginAction(loginDetails.toLogin())
         }
     }
 
-    private fun validateSignupInput(uiState: SignupDetails= signupInputUiState.signupDetails): Boolean {
+    private fun validateSignupInput(uiState: SignupDetails = signupInputUiState.signupDetails): Boolean {
         return with(uiState) {
-          name.isNotBlank()  && username.isNotBlank() && email.isNotBlank() && password.isNotBlank()
+            name.isNotBlank() && username.isNotBlank() && email.isNotBlank() && password.isNotBlank()
         }
     }
 
-    fun checkSignup(signupDetails: SignupDetails){
-        if(validateSignupInput()){
+    fun checkSignup(signupDetails: SignupDetails) {
+        if (validateSignupInput()) {
             signupAction(signupDetails.toSignup())
         }
     }
+
+    fun initLogin(){
+        loginInputUiState.loginDetails.usernameOrEmail = ""
+        loginInputUiState.loginDetails.password = ""
+    }
+
+    fun initSignup(){
+        signupInputUiState.signupDetails.name = ""
+        signupInputUiState.signupDetails.username = ""
+        signupInputUiState.signupDetails.email = ""
+        signupInputUiState.signupDetails.password = ""
+    }
+
 
     fun onPostClick(initPost: Post) {
         _post.value = initPost
@@ -175,12 +217,12 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
 
 
     /**
-     * Factory for [TodoViewModel] that takes [TodosRepository] as a dependency
+     * Factory for [UserViewModel] that takes [UsersRepository] as a dependency
      */
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
-                val application = (this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as TodoApplication)
+                val application = (this[APPLICATION_KEY] as TodoApplication)
                 val usersRepository = application.container.usersRepository
                 UserViewModel(usersRepository = usersRepository)
             }
@@ -199,15 +241,15 @@ data class LoginInputUiState(
 )
 
 data class LoginDetails(
-    val usernameOrEmail: String = "",
-    val password: String = "",
+    var usernameOrEmail: String = "",
+    var password: String = "",
 )
 
 data class SignupDetails(
-    val name: String = "",
-    val username: String = "",
-    val email: String = "",
-    val password: String = "",
+    var name: String = "",
+    var username: String = "",
+    var email: String = "",
+    var password: String = "",
 )
 
 data class SignupInputUiState(
@@ -228,14 +270,13 @@ fun SignupDetails.toSignup(): Signup = Signup(
 )
 
 
-
 /**
  * Extension function to convert [ItemUiState] to [Item]. If the value of [ItemDetails.price] is
  * not a valid [Double], then the price will be set to 0.0. Similarly if the value of
  * [ItemUiState] is not a valid [Int], then the quantity will be set to 0
  */
 fun LoginDetails.toLogin(): Login = Login(
-   usernameOrEmail = usernameOrEmail,
+    usernameOrEmail = usernameOrEmail,
     password = password
 )
 
@@ -248,12 +289,11 @@ fun Login.toLoginUiState(isEntryValid: Boolean = false): LoginInputUiState = Log
 )
 
 
-
 /**
  * Extension function to convert [Login] to [LoginDetails]
  */
 fun Login.toLogin(): LoginDetails = LoginDetails(
-  usernameOrEmail = usernameOrEmail,
+    usernameOrEmail = usernameOrEmail,
     password = password
 )
 
@@ -261,7 +301,7 @@ fun Login.toLogin(): LoginDetails = LoginDetails(
  * Extension function to convert [Login] to [LoginDetails]
  */
 fun Signup.toSignup(): SignupDetails = SignupDetails(
-    name= name,
+    name = name,
     username = username,
     email = email,
     password = password

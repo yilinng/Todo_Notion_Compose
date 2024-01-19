@@ -33,6 +33,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +51,8 @@ import com.example.todonotioncompose.ui.todo.TodoListScreen
 import com.example.todonotioncompose.ui.todo.TodoViewModel
 import com.example.todonotioncompose.R.string
 import com.example.todonotioncompose.model.BottomNavItem
+import com.example.todonotioncompose.ui.AppViewModelProvider
+import com.example.todonotioncompose.ui.auth.TokenViewModel
 import com.example.todonotioncompose.ui.auth.UserViewModel
 import com.example.todonotioncompose.ui.navigation.TodoNotionNavHost
 import kotlinx.serialization.json.JsonNull.content
@@ -78,7 +81,7 @@ fun TodoNotionApp(navController: NavHostController = rememberNavController()) {
         TodoNotionNavHost(
             navController = navController,
             viewModel = todoViewModel,
-            userViewModel= userViewModel,
+            userViewModel = userViewModel,
             Modifier.padding(innerPadding)
         )
     }
@@ -118,19 +121,36 @@ fun TodoNotionAppBar(
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier
+) {
 
-    NavigationBar(modifier,
-        containerColor=Color.White,
-        contentColor=Color.LightGray) {
+    val items = mutableListOf(
+        BottomNavItem.Home,
+        BottomNavItem.Search,
+        BottomNavItem.PostList,
+    )
+    val tokenViewModel: TokenViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    //check have token
+    val uiState by tokenViewModel.tokensUiState.collectAsState()
+
+    //show login
+    if (uiState.itemList.isEmpty()) {
+        items.add(BottomNavItem.Login)
+        items.remove(BottomNavItem.Logout)
+    } else {
+        items.remove(BottomNavItem.Login)
+        items.add(BottomNavItem.Logout)
+
+    }
+
+
+    NavigationBar(
+        modifier,
+        containerColor = Color.White,
+        contentColor = Color.LightGray
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
-        val items = listOf(
-            BottomNavItem.Home,
-            BottomNavItem.Search,
-            BottomNavItem.PostList,
-            BottomNavItem.Login,
-            )
 
         items.forEach { item ->
             NavigationBarItem(

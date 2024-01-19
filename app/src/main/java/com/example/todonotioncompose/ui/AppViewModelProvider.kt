@@ -7,6 +7,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.todonotioncompose.TodoApplication
 import com.example.todonotioncompose.ui.search.SearchViewModel
 
+import com.example.todonotioncompose.ui.auth.TokenViewModel
+
 /**
  * Provides Factory to create instance of ViewModel for the entire Inventory app
  */
@@ -15,6 +17,11 @@ object AppViewModelProvider {
         // Initializer for SearchViewModel
         initializer {
             SearchViewModel(todoApplication().container.keywordsRepository)
+        }
+
+        // Initializer for TokenViewModel
+        initializer {
+            TokenViewModel(todoApplication().container.tokensRepository)
         }
     }
 }

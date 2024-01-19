@@ -1,5 +1,6 @@
 package com.example.todonotioncompose.ui.post
 
+import android.util.Log
 import androidx.compose.foundation.background
 import com.example.todonotioncompose.R
 import com.example.todonotioncompose.ui.navigation.NavigationDestination
@@ -138,6 +139,7 @@ fun PostList(
             )
         }
     }
+    Log.d("getPostsScreen", posts.toString())
 }
 
 @Composable

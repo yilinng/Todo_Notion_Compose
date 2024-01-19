@@ -14,12 +14,9 @@ import com.example.todonotioncompose.TodoApplication
 import com.example.todonotioncompose.data.TodosRepository
 import com.example.todonotioncompose.model.Todo
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+
 
 import kotlinx.coroutines.launch
 import retrofit2.HttpException

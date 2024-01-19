@@ -1,9 +1,7 @@
 package com.example.todonotioncompose.model
 
-//import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import com.squareup.moshi.Json
-//@Serializable
+
 data class Todo(
     val id: String = "",
     val pageURL: String = "",
@@ -19,4 +17,4 @@ data class Todo(
     val userImageURL: String = "",
     @Json(name = "webformatURL") val imgSrcUrl: String = ""
 
-    )
+)

@@ -2,15 +2,19 @@ package com.example.todonotioncompose.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.example.todonotioncompose.model.BottomNavItem
 import com.example.todonotioncompose.ui.auth.LoginScreen
 import com.example.todonotioncompose.ui.auth.LoginScreenDestination
+import com.example.todonotioncompose.ui.auth.LogoutDialog
+import com.example.todonotioncompose.ui.auth.LogoutDialogDestination
 import com.example.todonotioncompose.ui.auth.SignupScreen
 import com.example.todonotioncompose.ui.auth.SignupScreenDestination
 import com.example.todonotioncompose.ui.auth.UserViewModel
@@ -79,7 +83,7 @@ fun TodoNotionNavHost(
                     navController.navigate(SearchResultScreenDestination.route)
                 },
                 viewModel = viewModel,
-                )
+            )
         }
 
         composable(
@@ -98,7 +102,7 @@ fun TodoNotionNavHost(
         }
 
         composable(
-            route = LoginScreenDestination.route
+            route = BottomNavItem.Login.route
         ) {
             LoginScreen(
                 navigateBack = { navController.popBackStack() },
@@ -111,7 +115,7 @@ fun TodoNotionNavHost(
                 },
                 userViewModel = userViewModel,
                 loginUiState = userViewModel.loginUiState,
-                )
+            )
         }
 
         composable(
@@ -120,14 +124,9 @@ fun TodoNotionNavHost(
             SignupScreen(
                 navigateBack = { navController.popBackStack() },
                 onNavigateUp = { navController.navigateUp() },
-                navigateToHome = {
-                    navController.navigate(BottomNavItem.Home.route)
-                },
-                navigateToLogin = {
-                    navController.navigate(LoginScreenDestination.route)
-                },
-                userViewModel = userViewModel
-            )
+                userViewModel = userViewModel,
+                signupUiState = userViewModel.signupUiState,
+                )
         }
 
         composable(route = BottomNavItem.PostList.route) {
@@ -158,6 +157,21 @@ fun TodoNotionNavHost(
                 postUiState = userViewModel.postUiState,
                 userViewModel = userViewModel,
                 retryAction = userViewModel::getPostsAction,
+            )
+        }
+
+        dialog(
+            route = LogoutDialogDestination.route,
+            dialogProperties = DialogProperties(
+                dismissOnBackPress = true,
+                dismissOnClickOutside = true,
+            )
+        ) {
+            LogoutDialog(
+                navigateBack = { navController.popBackStack() },
+                navigateToLogin = {
+                    navController.navigate(BottomNavItem.Login.route)
+                },
             )
         }
 

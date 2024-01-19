@@ -22,34 +22,36 @@ interface UsersRepository {
 
     suspend fun signupUser(@Body signup: Signup): ResponseBody
 
-    suspend fun logoutUser(@Header("Authorization") authorization: String,
-                           @Body token: String): ResponseBody
+    suspend fun logoutUser(
+        @Header("Authorization") authorization: String,
+        @Body token: String
+    ): ResponseBody
 
-    suspend fun getTodos(): List<Post>
+    suspend fun getPosts(): List<Post>
 
-    suspend fun getTodo(@Path("id") postId: String): Post
+    suspend fun getPost(@Path("id") postId: String): Post
 
-    suspend fun searchTodo(@Query(value = "title", encoded = true) title: String): List<Post>
+    suspend fun searchPost(@Query(value = "title", encoded = true) title: String): List<Post>
 
-    suspend fun addTodo(
+    suspend fun addPost(
         @Header("Authorization") authorization: String,
         @Body postDto: PostDto
     ): Post
 
-    suspend fun editTodo(
+    suspend fun editPost(
         @Path("id") postId: String,
         @Header("Authorization") authorization: String,
         @Body postDto: PostDto
     ): Post
 
-    suspend fun deleteTodo(
+    suspend fun deletePost(
         @Path("id") postId: String,
         @Header("Authorization") authorization: String
     ): ResponseBody
 }
 
 /**
- * Network Implementation of Repository that fetch photos list from pixabayApi.
+ * Network Implementation of Repository that fetch posts list from local api.
  */
 class NetworkUsersRepository(
     private val userApiService: UserApiService
@@ -57,21 +59,26 @@ class NetworkUsersRepository(
     /** Fetches list of MarsPhoto from marsApi*/
     override suspend fun loginUser(login: Login): Token = userApiService.loginUser(login)
 
-    override suspend fun signupUser(signup: Signup): ResponseBody = userApiService.signupUser(signup)
+    override suspend fun signupUser(signup: Signup): ResponseBody =
+        userApiService.signupUser(signup)
 
-    override suspend fun logoutUser(authorization: String, token: String): ResponseBody = userApiService.logoutUser(authorization, token)
+    override suspend fun logoutUser(authorization: String, token: String): ResponseBody =
+        userApiService.logoutUser(authorization, token)
 
-    override suspend fun getTodos(): List<Post> = userApiService.getTodos()
+    override suspend fun getPosts(): List<Post> = userApiService.getPosts()
 
-    override suspend fun getTodo(postId: String): Post = userApiService.getTodo(postId)
+    override suspend fun getPost(postId: String): Post = userApiService.getPost(postId)
 
-    override suspend fun searchTodo(title: String): List<Post> = userApiService.searchTodo(title)
+    override suspend fun searchPost(title: String): List<Post> = userApiService.searchPost(title)
 
-    override suspend fun addTodo(authorization: String, postDto: PostDto): Post = userApiService.addTodo(authorization, postDto)
+    override suspend fun addPost(authorization: String, postDto: PostDto): Post =
+        userApiService.addPost(authorization, postDto)
 
-    override suspend fun editTodo(postId: String, authorization: String, postDto: PostDto): Post = userApiService.editTodo(postId, authorization, postDto)
+    override suspend fun editPost(postId: String, authorization: String, postDto: PostDto): Post =
+        userApiService.editPost(postId, authorization, postDto)
 
-    override suspend fun deleteTodo(postId: String, authorization: String): ResponseBody = userApiService.deleteTodo(postId, authorization)
+    override suspend fun deletePost(postId: String, authorization: String): ResponseBody =
+        userApiService.deletePost(postId, authorization)
 
 
 }
