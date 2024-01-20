@@ -4,12 +4,14 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.todonotioncompose.R
 import com.example.todonotioncompose.TodoApplication
 import com.example.todonotioncompose.data.Token.Token
 import com.example.todonotioncompose.data.Token.TokensRepository
@@ -37,12 +39,16 @@ sealed interface LoginUiState {
     data class Success(val token: Token) : LoginUiState
     data class Error(val errorText: String) : LoginUiState
     object Loading : LoginUiState
+    object Default : LoginUiState
+
 }
 
 sealed interface SignupUiState {
     data class Success(val responseBody: ResponseBody) : SignupUiState
     data class Error(val errorText: String) : SignupUiState
     object Loading : SignupUiState
+    object Default : SignupUiState
+
 }
 
 class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() {
@@ -52,14 +58,14 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
         private set
 
     /** The mutable State that stores the status of the most recent request */
-    var loginUiState: LoginUiState by mutableStateOf(LoginUiState.Loading)
+    var loginUiState: LoginUiState by mutableStateOf(LoginUiState.Default)
         private set
 
     var loginInputUiState by mutableStateOf(LoginInputUiState())
         private set
 
     /** The mutable State that stores the status of the most recent request */
-    var signupUiState: SignupUiState by mutableStateOf(SignupUiState.Loading)
+    var signupUiState: SignupUiState by mutableStateOf(SignupUiState.Default)
         private set
 
 
@@ -122,8 +128,10 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
             }catch (e: HttpException) {
                 SignupUiState.Error(e.response()?.errorBody()!!.string())
             }
+            Log.d("signupStateAction1", signupUiState.toString())
 
-            Log.d("signupStateAction", signupUiState.toString())
+            Log.d("signupStateAction2", signupUiState.toString().contains("Username").toString())
+            Log.d("signupStateAction3", signupUiState.toString().contains("Email").toString())
 
         }
     }
@@ -208,6 +216,14 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
         signupInputUiState.signupDetails.username = ""
         signupInputUiState.signupDetails.email = ""
         signupInputUiState.signupDetails.password = ""
+    }
+
+    fun initLoginUiState(){
+        loginUiState = LoginUiState.Default
+    }
+
+    fun initSignupUiState(){
+        signupUiState = SignupUiState.Default
     }
 
 

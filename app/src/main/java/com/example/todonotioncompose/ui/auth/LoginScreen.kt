@@ -8,15 +8,17 @@ import androidx.compose.foundation.background
 import com.example.todonotioncompose.R
 import com.example.todonotioncompose.ui.navigation.NavigationDestination
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -25,10 +27,9 @@ import androidx.compose.material3.*
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
+
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,6 +54,7 @@ import com.example.todonotioncompose.data.Token.Token
 
 import com.example.todonotioncompose.ui.AppViewModelProvider
 import com.example.todonotioncompose.ui.theme.*
+
 
 
 object LoginScreenDestination : NavigationDestination {
@@ -87,9 +89,12 @@ fun LoginScreen(
         }
     ) { innerPadding ->
         Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxHeight()
-                .background(Gray50),
+                .background(Gray50)
+                .verticalScroll(rememberScrollState())
         ) {
             //https://developer.android.com/jetpack/compose/state
             // https://developer.android.com/codelabs/jetpack-compose-state?index=..%2F..index#0
@@ -99,6 +104,7 @@ fun LoginScreen(
             //  var loading by remember { mutableStateOf(false) }
             // Fetching the local context for using the Toast
             val context = LocalContext.current
+            val columnPadding = dimensionResource(id = R.dimen.padding_medium)
 
             LoginEntryBody(
                 loginInputUiState = userViewModel.loginInputUiState,
@@ -112,7 +118,6 @@ fun LoginScreen(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxWidth()
-                    .zIndex(0f)
             )
 
             when (loginUiState) {
@@ -133,12 +138,16 @@ fun LoginScreen(
 
                 is LoginUiState.Error -> {
                     Text(
-                        text = loginUiState.errorText,
+                        text =  stringResource(R.string.login_error),
                         color = Color.Red,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        modifier = modifier
+                            .offset(y = -(columnPadding))
                     )
                     showMessage(context = context, errorText = R.string.login_error)
                 }
+
+                else -> Unit
 
             }
 
@@ -147,6 +156,8 @@ fun LoginScreen(
 
     }
 }
+
+
 
 fun showMessage(context: Context, errorText: Int) {
     Toast.makeText(context, errorText, Toast.LENGTH_SHORT).show()

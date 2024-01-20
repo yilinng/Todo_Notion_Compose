@@ -46,6 +46,7 @@ object LogoutDialogDestination : NavigationDestination {
 //https://stackoverflow.com/questions/67396976/use-dialog-as-navigation-destination-with-jetpack-compose
 @Composable
 fun LogoutDialog(
+    userViewModel: UserViewModel,
     navigateBack: () -> Unit,
     navigateToLogin: () -> Unit
 ) {
@@ -115,12 +116,20 @@ fun LogoutDialog(
                             .weight(1f)
                             .clickable {
                                 Log.d(
-                                    "logoutOk",
+                                    "logoutOk1",
                                     tokenViewModel.tokensUiState.value.itemList.toString()
                                 )
                                 // logout action reload home page
                                 coroutineScope.launch {
                                     tokenViewModel.deleteToken()
+                                    //init loginUiState
+                                    userViewModel.initLoginUiState()
+
+                                    Log.d(
+                                        "logoutOk2loginUiState",
+                                        userViewModel.loginUiState.toString()
+                                    )
+
                                     navigateToLogin()
                                 }
 

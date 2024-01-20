@@ -168,6 +168,7 @@ fun TodoNotionNavHost(
             )
         ) {
             LogoutDialog(
+                userViewModel = userViewModel,
                 navigateBack = { navController.popBackStack() },
                 navigateToLogin = {
                     navController.navigate(BottomNavItem.Login.route)
