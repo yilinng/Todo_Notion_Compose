@@ -1,6 +1,7 @@
 package com.example.todonotioncompose.network
 
 import com.example.todonotioncompose.data.Token.Token
+import com.example.todonotioncompose.model.JwtAuthResponse
 import com.example.todonotioncompose.model.Login
 import com.example.todonotioncompose.model.Post
 import com.example.todonotioncompose.model.Signup
@@ -22,7 +23,7 @@ interface UserApiService {
     suspend fun loginUser(@Body login: Login): Token
 
     @POST("auth/signup")
-    suspend fun signupUser(@Body signup: Signup): ResponseBody
+    suspend fun signupUser(@Body signup: Signup): JwtAuthResponse
 
     //@GET("auth/user")
     //suspend fun getUser(@Header("Authorization") authorization: String): User

@@ -15,10 +15,12 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationDefaults.windowInsets
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialogDefaults.containerColor
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItemDefaults.contentColor
@@ -50,6 +52,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.todonotioncompose.ui.todo.TodoListScreen
 import com.example.todonotioncompose.ui.todo.TodoViewModel
 import com.example.todonotioncompose.R.string
+import com.example.todonotioncompose.data.Token.Token
 import com.example.todonotioncompose.model.BottomNavItem
 import com.example.todonotioncompose.ui.AppViewModelProvider
 import com.example.todonotioncompose.ui.auth.TokenViewModel
@@ -75,7 +78,7 @@ fun TodoNotionApp(navController: NavHostController = rememberNavController()) {
      */
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            BottomNavigationBar(navController = navController, userViewModel = userViewModel)
         }
     ) { innerPadding ->
         TodoNotionNavHost(
@@ -121,6 +124,7 @@ fun TodoNotionAppBar(
 @Composable
 fun BottomNavigationBar(
     navController: NavController,
+    userViewModel: UserViewModel,
     modifier: Modifier = Modifier
 ) {
 
@@ -133,14 +137,16 @@ fun BottomNavigationBar(
     //check have token
     val uiState by tokenViewModel.tokensUiState.collectAsState()
 
-    //show login
+    //show login and update token in userViewModel
     if (uiState.itemList.isEmpty()) {
         items.add(BottomNavItem.Login)
         items.remove(BottomNavItem.Logout)
+        //init token
+        userViewModel.setToken(token = Token())
     } else {
         items.remove(BottomNavItem.Login)
         items.add(BottomNavItem.Logout)
-
+        userViewModel.setToken(uiState.itemList[0])
     }
 
 
@@ -169,5 +175,6 @@ fun BottomNavigationBar(
 
 
 }
+
 
 

@@ -4,14 +4,12 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.todonotioncompose.R
 import com.example.todonotioncompose.TodoApplication
 import com.example.todonotioncompose.data.Token.Token
 import com.example.todonotioncompose.data.Token.TokensRepository
@@ -19,6 +17,7 @@ import com.example.todonotioncompose.data.UsersRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import com.example.todonotioncompose.model.*
+import com.example.todonotioncompose.network.dto.PostDto
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,6 +34,20 @@ sealed interface PostUiState {
     object Loading : PostUiState
 }
 
+sealed interface SinglePostUiState {
+    data class Success(val post: Post) : SinglePostUiState
+    object Error : SinglePostUiState
+    object Loading : SinglePostUiState
+    object Default : SinglePostUiState
+}
+
+sealed interface ResponsePostUiState {
+    data class Success(val responseBody: ResponseBody) : ResponsePostUiState
+    object Error : ResponsePostUiState
+    object Loading : ResponsePostUiState
+    object Default : ResponsePostUiState
+}
+
 sealed interface LoginUiState {
     data class Success(val token: Token) : LoginUiState
     data class Error(val errorText: String) : LoginUiState
@@ -44,7 +57,7 @@ sealed interface LoginUiState {
 }
 
 sealed interface SignupUiState {
-    data class Success(val responseBody: ResponseBody) : SignupUiState
+    data class Success(val jwtAuthResponse: JwtAuthResponse) : SignupUiState
     data class Error(val errorText: String) : SignupUiState
     object Loading : SignupUiState
     object Default : SignupUiState
@@ -68,15 +81,27 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
     var signupUiState: SignupUiState by mutableStateOf(SignupUiState.Default)
         private set
 
-
     var signupInputUiState by mutableStateOf(SignupInputUiState())
         private set
+
+    var singlePostUiState: SinglePostUiState by mutableStateOf(SinglePostUiState.Default)
+        private set
+
+    var singlePostInputUiState by mutableStateOf(SinglePostInputUiState())
+        private set
+
+    var responsePostUiState: ResponsePostUiState by mutableStateOf(ResponsePostUiState.Default)
+        private set
+
 
     //https://stackoverflow.com/questions/68671108/jetpack-compose-mutablelivedata-not-updating-ui-components
     //https://stackoverflow.com/questions/72760708/kotlin-stateflow-not-emitting-updates-to-its-collectors
     //post ui State
     private val _post = MutableStateFlow(Post())
     val post: StateFlow<Post> = _post.asStateFlow()
+
+    private val _token = MutableStateFlow<Token?>(Token())
+    val token: StateFlow<Token?> = _token.asStateFlow()
 
 
     init {
@@ -90,23 +115,41 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
      */
     fun updateLoginUiState(loginDetails: LoginDetails) {
         loginInputUiState =
-            LoginInputUiState(loginDetails = loginDetails, isEntryValid = validateLoginInput(loginDetails))
+            LoginInputUiState(
+                loginDetails = loginDetails,
+                isEntryValid = validateLoginInput(loginDetails)
+            )
     }
 
 
     /**
-     * Updates the [LoginUiState] with the value provided in the argument. This method also triggers
+     * Updates the [SignupUiState] with the value provided in the argument. This method also triggers
      * a validation for input values.
      */
     fun updateSignupUiState(signupDetails: SignupDetails) {
         signupInputUiState =
-            SignupInputUiState(signupDetails = signupDetails, isEntryValid = validateSignupInput(signupDetails))
+            SignupInputUiState(
+                signupDetails = signupDetails,
+                isEntryValid = validateSignupInput(signupDetails)
+            )
+    }
+
+    /**
+     * Updates the [SinglePostInputUiState] with the value provided in the argument. This method also triggers
+     * a validation for input values.
+     */
+    fun updatePostInputUiState(postDetails: PostDetails) {
+        singlePostInputUiState =
+            SinglePostInputUiState(
+                postDetails = postDetails,
+                isEntryValid = validatePostInput(postDetails)
+            )
     }
 
 
     //https://stackoverflow.com/questions/33815515/how-do-i-get-response-body-when-there-is-an-error-when-using-retrofit-2-0-observ
     private fun loginAction(login: Login) {
-        Log.d("login", login.toString())
+        //  Log.d("login", login.toString())
         viewModelScope.launch {
             loginUiState = LoginUiState.Loading
             loginUiState = try {
@@ -115,7 +158,7 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
                 LoginUiState.Error(e.response()?.errorBody()!!.string())
             }
 
-            Log.d("loginStateAction", loginUiState.toString())
+            // Log.d("loginStateAction", loginUiState.toString())
 
         }
     }
@@ -125,14 +168,15 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
             signupUiState = SignupUiState.Loading
             signupUiState = try {
                 SignupUiState.Success(usersRepository.signupUser(signup))
-            }catch (e: HttpException) {
+            } catch (e: HttpException) {
                 SignupUiState.Error(e.response()?.errorBody()!!.string())
             }
+            /*
             Log.d("signupStateAction1", signupUiState.toString())
 
             Log.d("signupStateAction2", signupUiState.toString().contains("Username").toString())
             Log.d("signupStateAction3", signupUiState.toString().contains("Email").toString())
-
+            */
         }
     }
 
@@ -167,11 +211,78 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
                 PostUiState.Error
             } catch (e: HttpException) {
                 PostUiState.Error
-            }finally {
-                Log.d("getPostsAction", postUiState.toString())
             }
         }
 
+    }
+
+    private fun addPostAction(postDto: PostDto) {
+        val accessToken = getToken()
+        viewModelScope.launch {
+            singlePostUiState = SinglePostUiState.Loading
+            //   Log.d("addPostAction accessToken", "Bearer $accessToken")
+            singlePostUiState = try {
+                SinglePostUiState.Success(
+                    usersRepository.addPost(
+                        authorization = "Bearer $accessToken",
+                        postDto
+                    )
+                )
+            } catch (e: Exception) {
+                SinglePostUiState.Error
+            }
+            //   Log.d("addPostAction_to_string", singlePostUiState.toString())
+
+            if (singlePostUiState.toString().contains("Success")) {
+                getPostsAction()
+            }
+
+        }
+    }
+
+    private fun editPostAction(postId: String, postDto: PostDto) {
+        viewModelScope.launch {
+            singlePostUiState = SinglePostUiState.Loading
+            val accessToken = getToken()
+            //  Log.d("editPostAction accessToken", "Bearer $accessToken")
+            singlePostUiState = try {
+                SinglePostUiState.Success(
+                    usersRepository.editPost(
+                        postId = postId,
+                        authorization = "Bearer $accessToken",
+                        postDto
+                    )
+                )
+            } catch (e: Exception) {
+                SinglePostUiState.Error
+            }
+
+            if (singlePostUiState.toString().contains("Success")) {
+                getPostsAction()
+            }
+        }
+    }
+
+    fun deletePostAction(postId: String) {
+        viewModelScope.launch {
+            responsePostUiState = ResponsePostUiState.Loading
+            val accessToken = getToken()
+            Log.d("deletePostAction accessToken", "Bearer $accessToken")
+            responsePostUiState = try {
+                ResponsePostUiState.Success(
+                    usersRepository.deletePost(
+                        postId = postId,
+                        authorization = "Bearer $accessToken"
+                    )
+                )
+            } catch (e: Exception) {
+                ResponsePostUiState.Error
+            }
+
+            if (responsePostUiState.toString().contains("Success")) {
+                getPostsAction()
+            }
+        }
     }
 
     /**
@@ -188,7 +299,7 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
     }
 
     fun checkLogin(loginDetails: LoginDetails) {
-        Log.d("checkLogin", loginDetails.toString())
+        // Log.d("checkLogin", loginDetails.toString())
         if (validateLoginInput()) {
             loginAction(loginDetails.toLogin())
         }
@@ -200,30 +311,92 @@ class UserViewModel(private val usersRepository: UsersRepository) : ViewModel() 
         }
     }
 
+    fun checkAddPost(postDetails: PostDetails) {
+        //Log.d("checkAddPost", postDetails.toString())
+        if (validatePostInput()) {
+            addPostAction(postDetails.toPost())
+        }
+    }
+
+    fun checkEditPost(postId: String, postDetails: PostDetails) {
+        //  Log.d("checkEditPost", postDetails.toString())
+        if (validatePostInput()) {
+            editPostAction(postId, postDetails.toPost())
+        }
+    }
+
+    private fun validatePostInput(uiState: PostDetails = singlePostInputUiState.postDetails): Boolean {
+        return with(uiState) {
+            title.isNotBlank() && content.isNotBlank()
+        }
+    }
+
     fun checkSignup(signupDetails: SignupDetails) {
         if (validateSignupInput()) {
             signupAction(signupDetails.toSignup())
         }
     }
 
-    fun initLogin(){
+    fun initLogin() {
         loginInputUiState.loginDetails.usernameOrEmail = ""
         loginInputUiState.loginDetails.password = ""
     }
 
-    fun initSignup(){
+    fun initSignup() {
         signupInputUiState.signupDetails.name = ""
         signupInputUiState.signupDetails.username = ""
         signupInputUiState.signupDetails.email = ""
         signupInputUiState.signupDetails.password = ""
     }
 
-    fun initLoginUiState(){
+    fun initPost() {
+        singlePostInputUiState.postDetails.title = ""
+        singlePostInputUiState.postDetails.content = ""
+    }
+
+    fun initLoginUiState() {
         loginUiState = LoginUiState.Default
     }
 
-    fun initSignupUiState(){
+    fun initSignupUiState() {
         signupUiState = SignupUiState.Default
+    }
+
+    fun initToken() {
+        _token.value = null
+    }
+
+    fun initSignPostUiState() {
+        singlePostUiState = SinglePostUiState.Default
+    }
+
+
+    fun setToken(token: Token) {
+        _token.value = token
+    }
+
+    private fun getToken(): String {
+        return if (token.value != null) {
+            token.value!!.accessToken
+        } else {
+            ""
+        }
+    }
+
+    fun slicePostTitle(str: String): String {
+        if (str.length > 50) {
+            return str.substring(0, 50) + "..."
+        } else {
+            return str
+        }
+    }
+
+    fun slicePostContent(str: String): String {
+        if (str.length > 80) {
+            return str.substring(0, 80) + "..."
+        } else {
+            return str
+        }
     }
 
 
@@ -273,6 +446,16 @@ data class SignupInputUiState(
     val isEntryValid: Boolean = false
 )
 
+data class SinglePostInputUiState(
+    val postDetails: PostDetails = PostDetails(),
+    val isEntryValid: Boolean = false
+)
+
+data class PostDetails(
+    var title: String = "",
+    var content: String = "",
+)
+
 /**
  * Extension function to convert [ItemUiState] to [Item]. If the value of [ItemDetails.price] is
  * not a valid [Double], then the price will be set to 0.0. Similarly if the value of
@@ -287,9 +470,9 @@ fun SignupDetails.toSignup(): Signup = Signup(
 
 
 /**
- * Extension function to convert [ItemUiState] to [Item]. If the value of [ItemDetails.price] is
+ * Extension function to convert [PostUiState] to [Item]. If the value of [PostDetails.price] is
  * not a valid [Double], then the price will be set to 0.0. Similarly if the value of
- * [ItemUiState] is not a valid [Int], then the quantity will be set to 0
+ * [SinglePostUiState] is not a valid [Int], then the quantity will be set to 0
  */
 fun LoginDetails.toLogin(): Login = Login(
     usernameOrEmail = usernameOrEmail,
@@ -302,6 +485,11 @@ fun LoginDetails.toLogin(): Login = Login(
 fun Login.toLoginUiState(isEntryValid: Boolean = false): LoginInputUiState = LoginInputUiState(
     loginDetails = this.toLogin(),
     isEntryValid = isEntryValid
+)
+
+fun PostDetails.toPost(): PostDto = PostDto(
+    title = title,
+    content = content
 )
 
 
@@ -321,4 +509,12 @@ fun Signup.toSignup(): SignupDetails = SignupDetails(
     username = username,
     email = email,
     password = password
+)
+
+/**
+ * Extension function to convert [Post] to [PostDetails]
+ */
+fun Post.toPost(): PostDetails = PostDetails(
+    title = title,
+    content = content
 )

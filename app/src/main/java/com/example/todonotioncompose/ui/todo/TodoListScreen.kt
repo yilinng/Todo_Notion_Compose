@@ -2,6 +2,11 @@ package com.example.todonotioncompose.ui.todo
 
 import android.util.Log
 import android.widget.Space
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -26,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +64,32 @@ fun TodoListScreen(
     viewModel: TodoViewModel,
     todoUiState: TodoUiState, retryAction: () -> Unit, modifier: Modifier = Modifier
 ) {
+    /*
+    val state by remember {
+        mutableStateOf(todoUiState)
+    }
+    */
+    AnimatedContent(
+        todoUiState,
+        transitionSpec = {
+            fadeIn(
+                animationSpec = tween(3000)
+            ) togetherWith fadeOut(animationSpec = tween(3000))
+        },
+        label = "Animated Content"
+    ) { todoUiState ->
+        when (todoUiState) {
+            is TodoUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
+            is TodoUiState.Success -> PhotosGridScreen(
+                todos = todoUiState.todos, modifier = modifier.fillMaxWidth(),
+                onTodoClick = navigateToTodoDetails, viewModel = viewModel
+            )
+
+            is TodoUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
+        }
+    }
+
+    /*
     when (todoUiState) {
         is TodoUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
         is TodoUiState.Success -> PhotosGridScreen(
@@ -67,6 +99,7 @@ fun TodoListScreen(
 
         is TodoUiState.Error -> ErrorScreen(retryAction, modifier = modifier.fillMaxSize())
     }
+     */
 }
 
 /**
@@ -84,7 +117,7 @@ fun LoadingScreen(modifier: Modifier = Modifier) {
 
 
 /**
- * The home screen displaying error message with re-attempt button.
+ * The home screen displaying error message with re-attempt buttonfScaffold.
  */
 @Composable
 fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {

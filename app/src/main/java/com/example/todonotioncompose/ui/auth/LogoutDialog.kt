@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -30,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.example.todonotioncompose.R
 import com.example.todonotioncompose.ui.AppViewModelProvider
 import com.example.todonotioncompose.ui.navigation.NavigationDestination
@@ -124,6 +122,8 @@ fun LogoutDialog(
                                     tokenViewModel.deleteToken()
                                     //init loginUiState
                                     userViewModel.initLoginUiState()
+                                    //init token
+                                    userViewModel.initToken()
 
                                     Log.d(
                                         "logoutOk2loginUiState",

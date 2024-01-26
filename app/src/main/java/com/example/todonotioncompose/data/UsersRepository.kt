@@ -1,6 +1,7 @@
 package com.example.todonotioncompose.data
 
 import com.example.todonotioncompose.data.Token.Token
+import com.example.todonotioncompose.model.JwtAuthResponse
 import com.example.todonotioncompose.model.Login
 import com.example.todonotioncompose.model.Post
 import com.example.todonotioncompose.model.Signup
@@ -20,7 +21,7 @@ import retrofit2.http.Query
 interface UsersRepository {
     suspend fun loginUser(@Body login: Login): Token
 
-    suspend fun signupUser(@Body signup: Signup): ResponseBody
+    suspend fun signupUser(@Body signup: Signup): JwtAuthResponse
 
     suspend fun logoutUser(
         @Header("Authorization") authorization: String,
@@ -59,7 +60,7 @@ class NetworkUsersRepository(
     /** Fetches list of MarsPhoto from marsApi*/
     override suspend fun loginUser(login: Login): Token = userApiService.loginUser(login)
 
-    override suspend fun signupUser(signup: Signup): ResponseBody =
+    override suspend fun signupUser(signup: Signup): JwtAuthResponse =
         userApiService.signupUser(signup)
 
     override suspend fun logoutUser(authorization: String, token: String): ResponseBody =

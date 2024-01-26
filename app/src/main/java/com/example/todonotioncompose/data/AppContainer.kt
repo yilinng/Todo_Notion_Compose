@@ -92,7 +92,7 @@ class DefaultAppContainer(private val context: Context) : AppContainer {
     }
 
     override val keywordsRepository: KeywordsRepository by lazy {
-        OfflineKeywordsRepository(TodoNotionDatabase.getDatabase(context).keyDao())
+        OfflineKeywordsRepository(TodoNotionDatabase.getDatabase(context).keywordDao())
     }
     override val tokensRepository: TokensRepository by lazy {
         OfflineTokensRepository(TodoNotionDatabase.getDatabase(context).tokenDao())

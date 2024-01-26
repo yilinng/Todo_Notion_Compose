@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.example.todonotioncompose.R
 import com.example.todonotioncompose.model.BottomNavItem
 import com.example.todonotioncompose.ui.auth.LoginScreen
 import com.example.todonotioncompose.ui.auth.LoginScreenDestination
@@ -20,6 +21,10 @@ import com.example.todonotioncompose.ui.auth.SignupScreenDestination
 import com.example.todonotioncompose.ui.auth.UserViewModel
 import com.example.todonotioncompose.ui.post.PostDetailsScreen
 import com.example.todonotioncompose.ui.post.PostDetailsScreenDestination
+import com.example.todonotioncompose.ui.post.PostEditDestination
+import com.example.todonotioncompose.ui.post.PostEditScreen
+import com.example.todonotioncompose.ui.post.PostEntryDestination
+import com.example.todonotioncompose.ui.post.PostEntryScreen
 import com.example.todonotioncompose.ui.post.PostListScreen
 import com.example.todonotioncompose.ui.search.SearchResultScreen
 import com.example.todonotioncompose.ui.search.SearchResultScreenDestination
@@ -126,7 +131,7 @@ fun TodoNotionNavHost(
                 onNavigateUp = { navController.navigateUp() },
                 userViewModel = userViewModel,
                 signupUiState = userViewModel.signupUiState,
-                )
+            )
         }
 
         composable(route = BottomNavItem.PostList.route) {
@@ -139,25 +144,49 @@ fun TodoNotionNavHost(
                 retryAction = userViewModel::getPostsAction,
                 userViewModel = userViewModel,
                 navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() }
-
+                onNavigateUp = { navController.navigateUp() },
+                navigateToPostEntry = {
+                    navController.navigate(PostEntryDestination.route)
+                }
             )
-
         }
         composable(
-            route = PostDetailsScreenDestination.routeWithArgs,
-            /*
-            arguments = listOf(navArgument(TodoDetailScreenDestination.todoIdArg) {
-                type = NavType.IntType
-            })
-             */
+            route = PostDetailsScreenDestination.routeWithArgs
         ) {
             PostDetailsScreen(
                 navigateBack = { navController.navigateUp() },
                 postUiState = userViewModel.postUiState,
                 userViewModel = userViewModel,
                 retryAction = userViewModel::getPostsAction,
+                navigateToPostEdit = {
+                    navController.navigate("${PostEditDestination.route}/${it}")
+                }
             )
+        }
+
+        composable(route = PostEntryDestination.route) {
+
+            PostEntryScreen(
+                userViewModel = userViewModel,
+                navigateBack = { navController.popBackStack()},
+                onNavigateUp = { navController.navigateUp()},
+                singlePostUiState = userViewModel.singlePostUiState
+            )
+
+        }
+
+
+        composable(
+            route = PostEditDestination.routeWithArgs
+        ) {
+
+            PostEditScreen(
+                userViewModel = userViewModel,
+                navigateBack = { navController.popBackStack() },
+                onNavigateUp = { navController.navigateUp() },
+                singlePostUiState = userViewModel.singlePostUiState
+            )
+
         }
 
         dialog(
@@ -169,7 +198,7 @@ fun TodoNotionNavHost(
         ) {
             LogoutDialog(
                 userViewModel = userViewModel,
-                navigateBack = { navController.popBackStack() },
+                navigateBack = { navController.popBackStack()},
                 navigateToLogin = {
                     navController.navigate(BottomNavItem.Login.route)
                 },

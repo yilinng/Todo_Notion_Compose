@@ -63,6 +63,8 @@ object LoginScreenDestination : NavigationDestination {
 }
 
 //https://developer.android.com/jetpack/compose/side-effects
+//https://developer.android.com/jetpack/compose/animation/quick-guide
+//https://stackoverflow.com/questions/69582190/how-to-do-this-scroll-hide-fab-button-in-jetpack-compose-with-transaction
 @SuppressLint("UnrememberedMutableState")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,6 +175,7 @@ fun LoginProcess(
 
     Log.d("loginSuccess", token.toToken().toString())
     tokenViewModel.updateUiState(token.toToken())
+    userViewModel.setToken(token)
     LaunchedEffect(tokenViewModel) {
         tokenViewModel.saveToken()
         userViewModel.initLogin()

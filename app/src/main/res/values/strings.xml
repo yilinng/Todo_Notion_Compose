@@ -45,6 +45,10 @@
     <string name="usernameOrEmail">usernameOrEmail</string>
     <string name="logout_title">Logout</string>
     <string name="logout_cont">Are you sure you want to log out?</string>
+
+    <string name="delete_post_title">Delete Post</string>
+    <string name="delete_post_cont">Are you sure you want to delete?</string>
+
     <string name="ok">OK</string>
     <string name="tab_recent">Recent</string>
     <string name="tab_favorites">Favorites</string>
@@ -64,6 +68,9 @@
     <string name="home_label">Home page</string>
 
     <string name="post_details_label">Post details page</string>
+    <string name="post_title">title</string>
+    <string name="post_content">content</string>
+    <string name="required_fields">*required fields</string>
 
 
     <string name="nav_title">Todo notion</string>
@@ -71,14 +78,16 @@
 
     <string name="nav_title1">Hello, <big><font color="#FF6200EE">%1$s</font></big>! Welcome to use.</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="item_detail_fragment_title">Item Details</string>
-    <string name="add_fragment_title">Add Item</string>
-    <string name="edit_fragment_title">Edit Item</string>
+
+    <string name="edit_post">Edit Post</string>
+
+    <string name="post_entry_title">Add Post</string>
 
     <string name="edit_title_error">title cannot be empty</string>
     <string name="edit_content_error">content cannot be empty</string>
     <string name="name">name</string>
+
+    <string name="edit_error">title and content cannot be empty</string>
 
     <string name="signup_success_msg1">Congratulations, your account has been successfully created.</string>
     <string name="signup_success_msg2">Please login to continue.</string>

@@ -50,7 +50,10 @@ import com.example.todonotioncompose.ui.theme.*
 
 import okhttp3.ResponseBody
 import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.text.font.FontWeight
+import com.example.todonotioncompose.model.JwtAuthResponse
+import kotlinx.coroutines.delay
 
 
 object SignupScreenDestination : NavigationDestination {
@@ -86,8 +89,8 @@ fun SignupScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                //  .fillMaxHeight()
-                //.background(Gray50)
+                .fillMaxHeight()
+                .background(Gray50)
                 .verticalScroll(rememberScrollState())
         ) {
             //var errorText by mutableStateOf("")
@@ -119,11 +122,13 @@ fun SignupScreen(
                     trackColor = MaterialTheme.colorScheme.surfaceVariant,
                 )
 
-                is SignupUiState.Success -> SignupProcess(
-                    responseBody = signupUiState.responseBody,
-                    navigateBack = navigateBack,
-                    userViewModel = userViewModel
-                )
+                is SignupUiState.Success -> {
+                    SignupProcess(
+                        jwtAuthResponse = signupUiState.jwtAuthResponse,
+                        navigateBack = navigateBack,
+                        userViewModel = userViewModel
+                    )
+                }
 
                 is SignupUiState.Error -> {
                     val errorResponseText = signupUiState.errorText
@@ -165,18 +170,18 @@ fun SignupScreen(
     }
 }
 
+//https://stackoverflow.com/questions/68852110/show-custom-alert-dialog-in-jetpack-compose
 @Composable
 fun SignupProcess(
-    responseBody: ResponseBody,
+    jwtAuthResponse: JwtAuthResponse,
     navigateBack: () -> Unit,
     userViewModel: UserViewModel
 ) {
+
     //clear signup inputField
     userViewModel.initSignup()
-    //init signupUiState
-    userViewModel.initSignupUiState()
 
-    Log.d("signupSuccess", responseBody.toString())
+    Log.d("signupSuccess", jwtAuthResponse.toString())
 
     AlertDialog(
         icon = {
@@ -194,6 +199,8 @@ fun SignupProcess(
         confirmButton = {
             TextButton(
                 onClick = {
+                    //init signupUiState
+                    userViewModel.initSignupUiState()
                     navigateBack()
                 }
             ) {
@@ -202,14 +209,7 @@ fun SignupProcess(
         },
 
         )
-    //  tokenViewModel.updateUiState(token.toToken())
-    /*
-    LaunchedEffect(tokenViewModel) {
-       // tokenViewModel.saveToken()
-        userViewModel.initSignup()
-        navigateToHome()
-    }
-    */
+
 }
 
 //https://stackoverflow.com/questions/66407851/an-alternative-solution-to-set-negative-padding-values-in-jetpack-compose-java
@@ -271,8 +271,6 @@ fun SignupEntryBody(
                 )
             }
         }
-
-
 
 
     }

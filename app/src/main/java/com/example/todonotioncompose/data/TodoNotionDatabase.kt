@@ -11,7 +11,7 @@ import com.example.todonotioncompose.data.Token.Token
 
 @Database(entities = [Keyword::class, Token::class], version = 1, exportSchema = false)
 abstract class TodoNotionDatabase : RoomDatabase(){
-    abstract fun keyDao(): KeywordDao
+    abstract fun keywordDao(): KeywordDao
     abstract fun tokenDao(): TokenDao
 
     companion object {
