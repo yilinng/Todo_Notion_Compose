@@ -10,43 +10,27 @@ import com.example.todonotioncompose.data.Token.TokenDao
 import com.example.todonotioncompose.data.Token.Token
 
 @Database(entities = [Keyword::class, Token::class], version = 1, exportSchema = false)
-abstract class TodoNotionDatabase : RoomDatabase(){
+abstract class TodoNotionDatabase : RoomDatabase() {
     abstract fun keywordDao(): KeywordDao
     abstract fun tokenDao(): TokenDao
 
     companion object {
         @Volatile
-        private var INSTANCE: TodoNotionDatabase? = null
+        private var Instance: TodoNotionDatabase? = null
 
         fun getDatabase(context: Context): TodoNotionDatabase {
             // if the INSTANCE is not null, then return it,
             // if it is, then create the database
-            return INSTANCE ?: synchronized(this) {
-               // Room.databaseBuilder(context, TodoNotionDatabase::class.java, "todoNotion_database")
+            return Instance ?: synchronized(this) {
+                Room.databaseBuilder(context, TodoNotionDatabase::class.java, "todoNotion_database")
                     /**
                      * Setting this option in your app's database builder means that Room
                      * permanently deletes all data from the tables in your database when it
                      * attempts to perform a migration with no defined migration path.
                      */
-                     /*
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }
-                      */
-
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    TodoNotionDatabase::class.java,
-                    "todoNotion_database"
-                )
-                    // Wipes and rebuilds instead of migrating if no Migration object.
-                    // Migration is not part of this codelab.
-                    .fallbackToDestructiveMigration()
-                    .build()
-                INSTANCE = instance
-                // return instance
-                instance
-
             }
         }
     }

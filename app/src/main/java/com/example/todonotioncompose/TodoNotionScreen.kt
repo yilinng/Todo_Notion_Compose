@@ -58,6 +58,7 @@ import com.example.todonotioncompose.ui.AppViewModelProvider
 import com.example.todonotioncompose.ui.auth.TokenViewModel
 import com.example.todonotioncompose.ui.auth.UserViewModel
 import com.example.todonotioncompose.ui.navigation.TodoNotionNavHost
+import com.example.todonotioncompose.ui.search.SearchViewModel
 import kotlinx.serialization.json.JsonNull.content
 
 //https://stackoverflow.com/questions/72954383/jetpack-compose-bottombar-is-under-bottom-navigation
@@ -68,6 +69,9 @@ fun TodoNotionApp(navController: NavHostController = rememberNavController()) {
 
     val userViewModel: UserViewModel =
         viewModel(factory = UserViewModel.Factory)
+
+    val searchViewModel: SearchViewModel =
+        viewModel(factory = AppViewModelProvider.Factory)
     /*
     val todoViewModel: TodoViewModel =
         viewModel(factory = TodoViewModel.Factory)
@@ -85,6 +89,7 @@ fun TodoNotionApp(navController: NavHostController = rememberNavController()) {
             navController = navController,
             viewModel = todoViewModel,
             userViewModel = userViewModel,
+            searchViewModel = searchViewModel,
             Modifier.padding(innerPadding)
         )
     }

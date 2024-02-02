@@ -46,10 +46,16 @@
     <string name="logout_title">Logout</string>
     <string name="logout_cont">Are you sure you want to log out?</string>
 
+    <string name="delete_keyword_title">Delete Keyword</string>
+    <string name="delete_keyword_cont">Are you sure you want to delete all records?</string>
+
+
     <string name="delete_post_title">Delete Post</string>
     <string name="delete_post_cont">Are you sure you want to delete?</string>
 
     <string name="ok">OK</string>
+    <string name="no">No</string>
+
     <string name="tab_recent">Recent</string>
     <string name="tab_favorites">Favorites</string>
     <string name="tab_posts">All post</string>

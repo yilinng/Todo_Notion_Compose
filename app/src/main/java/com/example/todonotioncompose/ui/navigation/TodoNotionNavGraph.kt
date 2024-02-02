@@ -30,6 +30,7 @@ import com.example.todonotioncompose.ui.search.SearchResultScreen
 import com.example.todonotioncompose.ui.search.SearchResultScreenDestination
 import com.example.todonotioncompose.ui.search.SearchScreen
 import com.example.todonotioncompose.ui.search.SearchScreenDestination
+import com.example.todonotioncompose.ui.search.SearchViewModel
 import com.example.todonotioncompose.ui.todo.HomeDestination
 import com.example.todonotioncompose.ui.todo.TodoDetailScreen
 import com.example.todonotioncompose.ui.todo.TodoDetailScreenDestination
@@ -45,6 +46,7 @@ fun TodoNotionNavHost(
     navController: NavHostController,
     viewModel: TodoViewModel,
     userViewModel: UserViewModel,
+    searchViewModel: SearchViewModel,
     modifier: Modifier = Modifier,
 ) {
     NavHost(
@@ -88,6 +90,7 @@ fun TodoNotionNavHost(
                     navController.navigate(SearchResultScreenDestination.route)
                 },
                 viewModel = viewModel,
+                searchViewModel = searchViewModel
             )
         }
 
@@ -102,7 +105,8 @@ fun TodoNotionNavHost(
                 },
                 todoUiState = viewModel.todoUiState,
                 retryAction = { viewModel.getPhotosByKeyWord(TodoDetailScreenDestination.todoIdArg) },
-                viewModel = viewModel
+                viewModel = viewModel,
+                searchViewModel = searchViewModel
             )
         }
 

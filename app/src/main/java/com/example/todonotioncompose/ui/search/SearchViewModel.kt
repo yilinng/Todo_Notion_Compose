@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 
 import com.example.todonotioncompose.data.Keyword.Keyword
 import com.example.todonotioncompose.data.Keyword.KeywordsRepository
+import com.example.todonotioncompose.model.Post
+import com.example.todonotioncompose.ui.auth.PostDetails
 
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -60,15 +62,20 @@ class SearchViewModel(private val keywordsRepository: KeywordsRepository) : View
 
     /**
      * Deletes the item from the [ItemsRepository]'s data source.
-
-    suspend fun deleteKeyword() {
-        keywordsRepository.deleteKeyword(keywordUiState.value.keywordDetails.toKeyword())
-    }
      */
+    suspend fun deleteKeyword() {
+        keywordsRepository.deleteKeyword(keywordUiState.keywordDetails.toKeyword())
+    }
+
     private fun validateInput(uiState: KeywordDetails = keywordUiState.keywordDetails): Boolean {
         return with(uiState) {
             keyName.isNotBlank()
         }
+    }
+
+    fun initKeyword(){
+        keywordUiState.keywordDetails.id = 0
+        keywordUiState.keywordDetails.keyName = ""
     }
 
 
@@ -113,13 +120,21 @@ data class KeywordUiState(
 )
 
 data class KeywordDetails(
-    val id: Long = 0,
-    val keyName: String = "",
+    var id: Long = 0,
+    var keyName: String = "",
 )
 
 
 fun KeywordDetails.toKeyword(): Keyword = Keyword(
     id = id,
     keyName = keyName,
+)
+
+/**
+ * Extension function to convert [Keyword] to [KeywordDetails]
+ */
+fun Keyword.toKeyword(): KeywordDetails = KeywordDetails(
+    id = id,
+    keyName = keyName
 )
 
