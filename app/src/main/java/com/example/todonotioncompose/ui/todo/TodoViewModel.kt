@@ -31,7 +31,7 @@ sealed interface TodoUiState {
     object Loading : TodoUiState
 }
 
-class TodoViewModel(private val todosRepository: TodosRepository) : ViewModel()  {
+class TodoViewModel(private val todosRepository: TodosRepository) : ViewModel() {
     /** The mutable State that stores the status of the most recent request */
     var todoUiState: TodoUiState by mutableStateOf(TodoUiState.Loading)
         private set
@@ -41,12 +41,6 @@ class TodoViewModel(private val todosRepository: TodosRepository) : ViewModel() 
     //todo ui State
     private val _todo = MutableStateFlow(Todo())
     val todo: StateFlow<Todo> = _todo.asStateFlow()
-
-    //filteredTodos
-    /*
-    private val _filteredTodos = MutableStateFlow<List<Todo>>(Todo())
-    val filteredTodos: StateFlow<List<Todo>> = _filteredTodos.asStateFlow()
-    */
 
     /**
      * Call getMarsPhotos() on init so we can display status immediately.
@@ -72,7 +66,7 @@ class TodoViewModel(private val todosRepository: TodosRepository) : ViewModel() 
         }
     }
 
-    fun getPhotosByKeyWord(searchWord: String){
+    fun getPhotosByKeyWord(searchWord: String) {
         viewModelScope.launch {
             todoUiState = TodoUiState.Loading
             todoUiState = try {
@@ -86,7 +80,7 @@ class TodoViewModel(private val todosRepository: TodosRepository) : ViewModel() 
     }
 
 
-    fun onTodoClick(initTodo: Todo){
+    fun onTodoClick(initTodo: Todo) {
         _todo.value = initTodo
         /*
         _todo.update { currentState ->
@@ -100,8 +94,21 @@ class TodoViewModel(private val todosRepository: TodosRepository) : ViewModel() 
         Log.d("todoClick", todo.value.tags)
     }
 
+    fun sliceTodoTitle(str: String): String {
+        return if (str.length > 80) {
+            str.substring(0, 80) + "..."
+        } else {
+            str
+        }
+    }
 
-
+    fun sliceTodoUser(str: String): String {
+        return if (str.length > 50) {
+            str.substring(0, 50) + "..."
+        } else {
+            str
+        }
+    }
 
 
     /**
@@ -115,7 +122,7 @@ class TodoViewModel(private val todosRepository: TodosRepository) : ViewModel() 
                 TodoViewModel(todosRepository = todosRepository)
             }
         }
-        private const val TIMEOUT_MILLIS = 5_000L
+        //private const val TIMEOUT_MILLIS = 5_000L
     }
 }
 

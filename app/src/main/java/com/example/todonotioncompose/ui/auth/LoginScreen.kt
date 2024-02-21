@@ -41,6 +41,7 @@ import androidx.compose.ui.res.dimensionResource
 
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -56,7 +57,6 @@ import com.example.todonotioncompose.ui.AppViewModelProvider
 import com.example.todonotioncompose.ui.theme.*
 
 
-
 object LoginScreenDestination : NavigationDestination {
     override val route = "login"
     override val titleRes = R.string.login
@@ -69,9 +69,6 @@ object LoginScreenDestination : NavigationDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    navigateBack: () -> Unit,
-    onNavigateUp: () -> Unit,
-    canNavigateBack: Boolean = true,
     tokenViewModel: TokenViewModel = viewModel(factory = AppViewModelProvider.Factory),
     userViewModel: UserViewModel,
     navigateToHome: () -> Unit,
@@ -81,84 +78,80 @@ fun LoginScreen(
 ) {
     // val uiState by tokenViewModel.tokensUiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TodoNotionAppBar(
-                title = stringResource(LoginScreenDestination.titleRes),
-                canNavigateBack = canNavigateBack,
-                navigateUp = onNavigateUp
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxHeight()
+            .background(Gray50)
+            .verticalScroll(rememberScrollState())
+    ) {
+        //https://developer.android.com/jetpack/compose/state
+        // https://developer.android.com/codelabs/jetpack-compose-state?index=..%2F..index#0
+        //https://developer.android.com/kotlin/coroutines
+        //https://stackoverflow.com/questions/69404720/how-to-propagate-the-response-of-an-async-operation-to-the-view-using-jetpack-co
+        //  var errorText by remember { mutableStateOf("") }
+        //  var loading by remember { mutableStateOf(false) }
+        // Fetching the local context for using the Toast
+        val context = LocalContext.current
+        val columnPadding = dimensionResource(id = R.dimen.padding_medium)
+
+        Text(
+            text = stringResource(R.string.login),
+            color = Sky600,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        )
+
+        LoginEntryBody(
+            loginInputUiState = userViewModel.loginInputUiState,
+            //    onLoginValueChange = userViewModel::up,
+            onSaveClick = {
+                userViewModel.checkLogin(userViewModel.loginInputUiState.loginDetails)
+                Log.d("loginState", loginUiState.toString())
+            },
+            onSignupTextClick = navigateToSignup,
+            userViewModel = userViewModel,
             modifier = Modifier
-                .fillMaxHeight()
-                .background(Gray50)
-                .verticalScroll(rememberScrollState())
-        ) {
-            //https://developer.android.com/jetpack/compose/state
-            // https://developer.android.com/codelabs/jetpack-compose-state?index=..%2F..index#0
-            //https://developer.android.com/kotlin/coroutines
-            //https://stackoverflow.com/questions/69404720/how-to-propagate-the-response-of-an-async-operation-to-the-view-using-jetpack-co
-            //  var errorText by remember { mutableStateOf("") }
-            //  var loading by remember { mutableStateOf(false) }
-            // Fetching the local context for using the Toast
-            val context = LocalContext.current
-            val columnPadding = dimensionResource(id = R.dimen.padding_medium)
+                .fillMaxWidth()
+        )
 
-            LoginEntryBody(
-                loginInputUiState = userViewModel.loginInputUiState,
-                //    onLoginValueChange = userViewModel::up,
-                onSaveClick = {
-                    userViewModel.checkLogin(userViewModel.loginInputUiState.loginDetails)
-                    Log.d("loginState", loginUiState.toString())
-                },
-                onSignupTextClick = navigateToSignup,
-                userViewModel = userViewModel,
+        when (loginUiState) {
+            is LoginUiState.Loading -> CircularProgressIndicator(
                 modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxWidth()
+                    .width(64.dp)
+                    .zIndex(2f),
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
             )
 
-            when (loginUiState) {
-                is LoginUiState.Loading -> CircularProgressIndicator(
-                    modifier = Modifier
-                        .width(64.dp)
-                        .zIndex(2f),
-                    color = MaterialTheme.colorScheme.secondary,
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            is LoginUiState.Success -> LoginProcess(
+                token = loginUiState.token,
+                tokenViewModel = tokenViewModel,
+                navigateToHome = navigateToHome,
+                userViewModel = userViewModel
+            )
+
+            is LoginUiState.Error -> {
+                Text(
+                    text = stringResource(R.string.login_error),
+                    color = Color.Red,
+                    fontSize = 20.sp,
+                    modifier = modifier
+                        .offset(y = -(columnPadding))
                 )
-
-                is LoginUiState.Success -> LoginProcess(
-                    token = loginUiState.token,
-                    tokenViewModel = tokenViewModel,
-                    navigateToHome = navigateToHome,
-                    userViewModel = userViewModel
-                )
-
-                is LoginUiState.Error -> {
-                    Text(
-                        text =  stringResource(R.string.login_error),
-                        color = Color.Red,
-                        fontSize = 20.sp,
-                        modifier = modifier
-                            .offset(y = -(columnPadding))
-                    )
-                    showMessage(context = context, errorText = R.string.login_error)
-                }
-
-                else -> Unit
-
+                showMessage(context = context, errorText = R.string.login_error)
             }
 
+            else -> Unit
+
         }
 
-
     }
-}
 
+
+}
 
 
 fun showMessage(context: Context, errorText: Int) {

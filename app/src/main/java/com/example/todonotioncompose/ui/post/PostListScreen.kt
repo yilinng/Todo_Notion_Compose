@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 import com.example.todonotioncompose.TodoNotionAppBar
-import com.example.todonotioncompose.data.Token.Token
 
 import com.example.todonotioncompose.model.Post
 
@@ -61,9 +60,6 @@ object PostListScreenDestination : NavigationDestination {
 fun PostListScreen(
     navigateToPostDetails: (String) -> Unit,
     navigateToPostEntry: () -> Unit,
-    navigateBack: () -> Unit,
-    onNavigateUp: () -> Unit,
-    canNavigateBack: Boolean = true,
     postUiState: PostUiState, retryAction: () -> Unit,
     userViewModel: UserViewModel,
     modifier: Modifier = Modifier
@@ -74,13 +70,7 @@ fun PostListScreen(
     Log.d("postList_token", haveToken.toString())
 
     Scaffold(
-        topBar = {
-            TodoNotionAppBar(
-                title = stringResource(PostListScreenDestination.titleRes),
-                canNavigateBack = canNavigateBack,
-                navigateUp = onNavigateUp
-            )
-        }, floatingActionButton = {
+         floatingActionButton = {
             if (haveToken != null) {
                 if (haveToken.accessToken.isNotEmpty()) {
                     FloatingActionButton(onClick = {
@@ -156,7 +146,11 @@ fun PostCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
 
-        Text(text = userViewModel.slicePostTitle(post.title), fontSize = 15.sp, textAlign = TextAlign.Center)
+        Text(
+            text = userViewModel.slicePostTitle(post.title),
+            fontSize = 15.sp,
+            textAlign = TextAlign.Center
+        )
 
         Spacer(modifier = Modifier.padding(top = 2.dp))
 

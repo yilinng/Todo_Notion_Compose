@@ -9,8 +9,7 @@ import androidx.lifecycle.viewModelScope
 
 import com.example.todonotioncompose.data.Keyword.Keyword
 import com.example.todonotioncompose.data.Keyword.KeywordsRepository
-import com.example.todonotioncompose.model.Post
-import com.example.todonotioncompose.ui.auth.PostDetails
+
 
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -61,7 +60,7 @@ class SearchViewModel(private val keywordsRepository: KeywordsRepository) : View
     }
 
     /**
-     * Deletes the item from the [ItemsRepository]'s data source.
+     * Deletes the item from the [keywordsRepository]'s data source.
      */
     suspend fun deleteKeyword() {
         keywordsRepository.deleteKeyword(keywordUiState.keywordDetails.toKeyword())

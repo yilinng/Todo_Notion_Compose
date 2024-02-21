@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -141,7 +142,12 @@ fun ErrorScreen(retryAction: () -> Unit, modifier: Modifier = Modifier) {
  * https://developer.android.com/jetpack/compose/touch-input/pointer-input/tap-and-press
  */
 @Composable
-fun PhotosGridScreen(todos: List<Todo>, onTodoClick: (String) -> Unit, viewModel: TodoViewModel, modifier: Modifier = Modifier) {
+fun PhotosGridScreen(
+    todos: List<Todo>,
+    onTodoClick: (String) -> Unit,
+    viewModel: TodoViewModel,
+    modifier: Modifier = Modifier
+) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
         modifier = modifier,
@@ -150,12 +156,13 @@ fun PhotosGridScreen(todos: List<Todo>, onTodoClick: (String) -> Unit, viewModel
         items(items = todos, key = { todo -> todo.id }) { todo ->
             TodoPhotoCard(
                 todo = todo,
+                viewModel = viewModel,
                 modifier = modifier
                     .padding(4.dp)
                     .fillMaxWidth()
                     .aspectRatio(1.5f)
-                   // .clickable { onTodoClick(todo.id) }
-                    .pointerInput(onTodoClick){
+                    // .clickable { onTodoClick(todo.id) }
+                    .pointerInput(onTodoClick) {
                         detectTapGestures {
                             onTodoClick(todo.id)
                             viewModel.onTodoClick(todo)
@@ -169,7 +176,7 @@ fun PhotosGridScreen(todos: List<Todo>, onTodoClick: (String) -> Unit, viewModel
 //https://developer.android.com/jetpack/compose/graphics/images/customize
 //https://developer.android.com/jetpack/compose/text/style-text
 @Composable
-fun TodoPhotoCard(todo: Todo, modifier: Modifier = Modifier) {
+fun TodoPhotoCard(todo: Todo, viewModel: TodoViewModel, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
         shape = MaterialTheme.shapes.medium,
@@ -184,11 +191,24 @@ fun TodoPhotoCard(todo: Todo, modifier: Modifier = Modifier) {
             contentScale = ContentScale.Crop,
             modifier = Modifier.height(200.dp)
         )
-        Text(text = todo.tags.replace(",", " "), fontSize = 15.sp, textAlign = TextAlign.Center)
+        Text(
+            text = viewModel.sliceTodoTitle(todo.tags.replace(",", " ")),
+            modifier = Modifier
+                .padding(dimensionResource(id = R.dimen.padding_small)),
+            fontSize = 15.sp,
+            textAlign = TextAlign.Center
+        )
 
-        Spacer(modifier = Modifier.padding(top=2.dp))
+        Spacer(modifier = Modifier.padding(top = 2.dp))
 
-        Text(text = todo.user, fontSize = 12.sp, color = Color.DarkGray,  textAlign = TextAlign.Center)
+        Text(
+            text = viewModel.sliceTodoUser(todo.user),
+            modifier = Modifier
+                .padding(dimensionResource(id = R.dimen.padding_small)),
+            fontSize = 12.sp,
+            color = Color.DarkGray,
+            textAlign = TextAlign.Center
+        )
 
     }
 }
@@ -214,11 +234,25 @@ fun ErrorScreenPreview() {
 @Composable
 fun PhotosGridScreenPreview() {
     TodoNotionComposeTheme {
-        val mockData = List(10) { Todo(id="$it", pageURL="https://pixabay.com/photos/christmas-baubles-heart-decoration-8455782/",
-            type="photo",tags="christmas baubles, heart, laptop wallpaper", views=8336,downloads=7061,collections=22,likes=103,comments=48,user_id=1425977
-            ,user="ChiemSeherin", userImageURL="https://cdn.pixabay.com/user/2023/11/03/18-31-17-586_250x250.jpeg", imgSrcUrl="https://cdn.pixabay.com/user/2023/11/03/18-31-17-586_250x250.jpeg")}
+        val mockData = List(10) {
+            Todo(
+                id = "$it",
+                pageURL = "https://pixabay.com/photos/christmas-baubles-heart-decoration-8455782/",
+                type = "photo",
+                tags = "christmas baubles, heart, laptop wallpaper",
+                views = 8336,
+                downloads = 7061,
+                collections = 22,
+                likes = 103,
+                comments = 48,
+                user_id = 1425977,
+                user = "ChiemSeherin",
+                userImageURL = "https://cdn.pixabay.com/user/2023/11/03/18-31-17-586_250x250.jpeg",
+                imgSrcUrl = "https://cdn.pixabay.com/user/2023/11/03/18-31-17-586_250x250.jpeg"
+            )
+        }
         val todoViewModel: TodoViewModel =
             viewModel(factory = TodoViewModel.Factory)
-        PhotosGridScreen(mockData, onTodoClick= {}, viewModel= todoViewModel)
+        PhotosGridScreen(mockData, onTodoClick = {}, viewModel = todoViewModel)
     }
 }

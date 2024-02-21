@@ -3,17 +3,13 @@ package com.example.todonotioncompose.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
-import androidx.navigation.navArgument
-import com.example.todonotioncompose.R
+
 import com.example.todonotioncompose.model.BottomNavItem
 import com.example.todonotioncompose.ui.auth.LoginScreen
-import com.example.todonotioncompose.ui.auth.LoginScreenDestination
 import com.example.todonotioncompose.ui.auth.LogoutDialog
 import com.example.todonotioncompose.ui.auth.LogoutDialogDestination
 import com.example.todonotioncompose.ui.auth.SignupScreen
@@ -29,13 +25,13 @@ import com.example.todonotioncompose.ui.post.PostListScreen
 import com.example.todonotioncompose.ui.search.SearchResultScreen
 import com.example.todonotioncompose.ui.search.SearchResultScreenDestination
 import com.example.todonotioncompose.ui.search.SearchScreen
-import com.example.todonotioncompose.ui.search.SearchScreenDestination
 import com.example.todonotioncompose.ui.search.SearchViewModel
 import com.example.todonotioncompose.ui.todo.HomeDestination
 import com.example.todonotioncompose.ui.todo.TodoDetailScreen
 import com.example.todonotioncompose.ui.todo.TodoDetailScreenDestination
 import com.example.todonotioncompose.ui.todo.TodoListScreen
 import com.example.todonotioncompose.ui.todo.TodoViewModel
+import com.example.todonotioncompose.utils.NavigationType
 
 /**
  * Provides Navigation graph for the application.
@@ -85,7 +81,6 @@ fun TodoNotionNavHost(
         ) {
             SearchScreen(
                 navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() },
                 navigateToSearchResult = {
                     navController.navigate(SearchResultScreenDestination.route)
                 },
@@ -114,8 +109,6 @@ fun TodoNotionNavHost(
             route = BottomNavItem.Login.route
         ) {
             LoginScreen(
-                navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() },
                 navigateToHome = {
                     navController.navigate(BottomNavItem.Home.route)
                 },
@@ -147,8 +140,6 @@ fun TodoNotionNavHost(
                 postUiState = userViewModel.postUiState,
                 retryAction = userViewModel::getPostsAction,
                 userViewModel = userViewModel,
-                navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() },
                 navigateToPostEntry = {
                     navController.navigate(PostEntryDestination.route)
                 }

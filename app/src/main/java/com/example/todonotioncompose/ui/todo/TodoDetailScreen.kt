@@ -2,38 +2,42 @@ package com.example.todonotioncompose.ui.todo
 
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
+
+import androidx.compose.ui.Alignment
 import com.example.todonotioncompose.R
-import com.example.todonotioncompose.ui.AppViewModelProvider
+
 import com.example.todonotioncompose.ui.navigation.NavigationDestination
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
+
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +47,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.todonotioncompose.model.Todo
 import com.example.todonotioncompose.TodoNotionAppBar
+import com.example.todonotioncompose.ui.theme.*
+
 import com.example.todonotioncompose.ui.theme.TodoNotionComposeTheme
 
 object TodoDetailScreenDestination : NavigationDestination {
@@ -60,7 +66,7 @@ fun TodoDetailScreen(
     modifier: Modifier = Modifier,
 ) {
     //https://stackoverflow.com/questions/38250022/what-does-by-keyword-do-in-kotlin
-   // val uiState by viewModel.todo.collectAsState()
+    // val uiState by viewModel.todo.collectAsState()
     val uiState by viewModel.todo.collectAsState()
 
     //val coroutineScope = rememberCoroutineScope()
@@ -71,14 +77,20 @@ fun TodoDetailScreen(
                 canNavigateBack = true,
                 navigateUp = navigateBack
             )
-        },  modifier = modifier
+        }, modifier = modifier
     ) { innerPadding ->
-        TodoDetailsBody(
-            todo = uiState,
+        Column(
             modifier = Modifier
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-        )
+                .background(color = Gray50),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+        ) {
+            TodoDetailsBody(
+                todo = uiState,
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+            )
+        }
     }
 
     Log.d("todoClickScreen", uiState.toString())
@@ -91,8 +103,8 @@ private fun TodoDetailsBody(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_small)),
+        //verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
         TodoDetails(
             todo = todo, modifier = Modifier.fillMaxWidth()
@@ -101,6 +113,7 @@ private fun TodoDetailsBody(
 }
 
 
+//https://stackoverflow.com/questions/75352786/kotlin-compose-vertical-center-image-bottom-align-text
 @Composable
 fun TodoDetails(
     todo: Todo, modifier: Modifier = Modifier
@@ -112,20 +125,21 @@ fun TodoDetails(
         )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(id = R.dimen.padding_medium)),
-            verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
+            modifier = Modifier.fillMaxSize().padding(dimensionResource(id = R.dimen.padding_medium))
+                .align(Alignment.CenterHorizontally),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            //  verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current).data(todo.imgSrcUrl)
                     .crossfade(true).build(),
                 contentDescription = stringResource(R.string.todo_img),
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.height(200.dp)
-                //contentScale = ContentScale.Fit,
+                modifier = Modifier.size(300.dp),
+               // contentScale = ContentScale.Fit,
                 //modifier = Modifier.fillMaxWidth()
-               // modifier = Modifier.aspectRatio(16f / 6f)
+                // modifier = Modifier.aspectRatio(16f / 6f)
             )
             TodoDetailsRow(
                 labelResID = R.string.todo_detail_title,
@@ -170,6 +184,6 @@ fun ItemDetailsScreenPreview() {
     val todoViewModel: TodoViewModel =
         viewModel(factory = TodoViewModel.Factory)
     TodoNotionComposeTheme {
-        TodoDetailsBody(todo =  todoViewModel.todo.collectAsState().value)
+        TodoDetailsBody(todo = todoViewModel.todo.collectAsState().value)
     }
 }

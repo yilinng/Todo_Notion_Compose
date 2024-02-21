@@ -2,7 +2,6 @@ package com.example.todonotioncompose.ui.search
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -71,60 +70,48 @@ object SearchScreenDestination : NavigationDestination {
 fun SearchScreen(
     navigateToSearchResult: () -> Unit,
     navigateBack: () -> Unit,
-    onNavigateUp: () -> Unit,
-    canNavigateBack: Boolean = true,
     searchViewModel: SearchViewModel,
     viewModel: TodoViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     val uiState by searchViewModel.searchUiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TodoNotionAppBar(
-                title = stringResource(SearchScreenDestination.titleRes),
-                canNavigateBack = canNavigateBack,
-                navigateUp = onNavigateUp
-            )
-        }
-    ) { innerPadding ->
-        Column(
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .background(color = Gray50)
+    ) {
+        KeywordEntryBody(
+            keywordUiState = searchViewModel.keywordUiState,
+            onKeywordValueChange = searchViewModel::updateUiState,
+            searchViewModel = searchViewModel,
+            viewModel = viewModel,
+            navigateToSearchResult = navigateToSearchResult,
             modifier = Modifier
-                .fillMaxHeight()
-                .background(color = Gray50)
-        ) {
-            KeywordEntryBody(
-                keywordUiState = searchViewModel.keywordUiState,
-                onKeywordValueChange = searchViewModel::updateUiState,
-                searchViewModel = searchViewModel,
-                viewModel = viewModel,
-                navigateToSearchResult = navigateToSearchResult,
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.padding(top = 1.dp))
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.padding(top = 1.dp))
 
-            KeywordList(
-                keywords = uiState.itemList,
-                searchViewModel = searchViewModel,
-                viewModel = viewModel,
-                navigateToSearchResult = navigateToSearchResult,
-                onDelete = {
-                    // Note: If the user rotates the screen very fast, the operation may get cancelled
-                    // and the item may not be deleted from the Database. This is because when config
-                    // change occurs, the Activity will be recreated and the rememberCoroutineScope will
-                    // be cancelled - since the scope is bound to composition.
-                    coroutineScope.launch {
-                        searchViewModel.deleteKeyword()
-                        searchViewModel.initKeyword()
-                        navigateBack()
-                    }
-                },
-            )
-        }
+        KeywordList(
+            keywords = uiState.itemList,
+            searchViewModel = searchViewModel,
+            viewModel = viewModel,
+            navigateToSearchResult = navigateToSearchResult,
+            onDelete = {
+                // Note: If the user rotates the screen very fast, the operation may get cancelled
+                // and the item may not be deleted from the Database. This is because when config
+                // change occurs, the Activity will be recreated and the rememberCoroutineScope will
+                // be cancelled - since the scope is bound to composition.
+                coroutineScope.launch {
+                    searchViewModel.deleteKeyword()
+                    searchViewModel.initKeyword()
+                    navigateBack()
+                }
+            },
+        )
     }
+
 }
 
 //https://stackoverflow.com/questions/59133100/how-to-close-the-virtual-keyboard-from-a-jetpack-compose-textfield
@@ -182,7 +169,9 @@ fun KeywordList(
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    LazyColumn(modifier = modifier) {
+    LazyColumn(
+        modifier = modifier
+    ) {
         items(items = keywords, key = { it.id }) { keyword ->
             SearchKeyword(
                 keyword = keyword,
@@ -194,7 +183,10 @@ fun KeywordList(
                         detectTapGestures {
                             coroutineScope.launch {
                                 searchViewModel.updateUiState(keyword.toKeyword())
-                                Log.d("search_click", searchViewModel.keywordUiState.keywordDetails.toString())
+                                Log.d(
+                                    "search_click",
+                                    searchViewModel.keywordUiState.keywordDetails.toString()
+                                )
                                 viewModel.getPhotosByKeyWord(searchViewModel.keywordUiState.keywordDetails.keyName)
                                 navigateToSearchResult()
                             }
@@ -215,7 +207,8 @@ private fun SearchKeyword(
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        modifier = modifier,
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         var deleteConfirmationRequired by remember { mutableStateOf(false) }
 
@@ -324,7 +317,6 @@ fun SearchScreenPreview() {
         SearchScreen(
             navigateBack = {},
             navigateToSearchResult = { mockKeyword },
-            onNavigateUp = {},
             searchViewModel = searchViewModel,
             viewModel = todoViewModel
         )

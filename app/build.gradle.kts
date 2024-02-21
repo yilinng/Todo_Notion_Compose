@@ -63,6 +63,7 @@ dependencies {
     implementation("androidx.compose.material3:material3-android:1.2.0-alpha10")
     implementation("androidx.compose.material:material-icons-extended:1.6.0-beta03")
     implementation("androidx.compose.material:material:1.6.0-beta03")
+    implementation("androidx.compose.material3:material3-window-size-class")
 
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:${rootProject.extra["lifecycle_version"]}")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${rootProject.extra["lifecycle_version"]}")

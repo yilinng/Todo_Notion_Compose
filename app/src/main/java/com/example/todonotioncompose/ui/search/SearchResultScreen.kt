@@ -26,7 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -38,7 +37,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todonotioncompose.TodoNotionAppBar
 import com.example.todonotioncompose.model.Todo
-import com.example.todonotioncompose.ui.AppViewModelProvider
 import com.example.todonotioncompose.ui.theme.TodoNotionComposeTheme
 import com.example.todonotioncompose.ui.todo.ErrorScreen
 import com.example.todonotioncompose.ui.todo.LoadingScreen
@@ -77,6 +75,7 @@ fun SearchResultScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier
+                .padding(innerPadding)
                 .fillMaxHeight()
                 .background(Color.LightGray)
         ) {
@@ -84,11 +83,10 @@ fun SearchResultScreen(
                 keywordUiState = searchViewModel.keywordUiState,
                 onKeywordValueChange = searchViewModel::updateUiState,
                 modifier = Modifier
-                    .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
                     .fillMaxWidth()
             )
-            Spacer (modifier = Modifier.padding(top = 1.dp))
+            Spacer(modifier = Modifier.padding(top = 1.dp))
 
             when (todoUiState) {
                 is TodoUiState.Loading -> LoadingScreen(modifier = modifier.fillMaxSize())
@@ -110,10 +108,11 @@ fun KeywordResultEntryBody(
     onKeywordValueChange: (KeywordDetails) -> Unit,
     modifier: Modifier
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    // val coroutineScope = rememberCoroutineScope()
     Column(
-        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_small)),
-        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_small))
+        modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium)
+        )
     ) {
 
         Log.d("search_Result", keywordUiState.keywordDetails.toString())
@@ -140,10 +139,11 @@ fun TodoList(
     viewModel: TodoViewModel,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier = modifier) {
+    LazyColumn(modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium))) {
         items(items = todos, key = { it.id }) { initTodo ->
             TodoPhotoCard(
                 todo = initTodo,
+                viewModel = viewModel,
                 modifier = Modifier
                     .padding(dimensionResource(id = R.dimen.padding_small))
                     .pointerInput(onTodoClick) {
